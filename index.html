@@ -1,0 +1,2612 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'">
+<meta name="theme-color" content="#047857">
+<title>My Finance</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
+<style>
+/* ============ Sistem desain ============ */
+:root{
+  --bg:#f2f4f3; --kartu:#ffffff; --tinta:#0c1a16; --redup:#5b6b65; --samar:#8b9a94;
+  --garis:#e4eae7; --lembut:#f2f6f4;
+  --hijau:#047857; --hijau2:#10b981; --merah:#e11d48; --kuning:#d97706; --biru:#2563eb;
+  --r:18px; --r2:12px;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+html[data-tema="gelap"]{
+  --bg:#080d0b; --kartu:#111917; --tinta:#e9f0ed; --redup:#8fa09a; --samar:#6b7d77;
+  --garis:#1d2a26; --lembut:#15201c;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--tinta);font-family:var(--sans);font-size:15px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer;padding:0}
+input,select,textarea{background:var(--kartu);border:1px solid var(--garis);border-radius:var(--r2);
+  padding:11px 12px;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--hijau2)}
+h1,h2,h3{margin:0;font-weight:650;letter-spacing:-.01em}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+.cangkang{max-width:1100px;margin:0 auto;display:flex}
+.utama{flex:1;min-width:0;padding:0 16px 120px}
+@media(min-width:900px){ .utama{padding:0 28px 48px} }
+
+.kartu{background:var(--kartu);border:1px solid var(--garis);border-radius:var(--r);padding:16px}
+.kartu+.kartu,.blok>*+*{margin-top:14px}
+.blok>*{margin-top:14px}
+.judul{font-size:14px;font-weight:650}
+.sub{color:var(--redup);font-size:12.5px}
+.samar{color:var(--samar);font-size:12px}
+.baris{display:flex;align-items:center;gap:10px}
+.antara{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.isi{flex:1;min-width:0}
+.potong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.naik{color:var(--hijau)} .turun{color:var(--merah)} .awas{color:var(--kuning)}
+
+.tbl{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:10px 14px;border-radius:var(--r2);border:1px solid var(--garis);font-size:13.5px;font-weight:550}
+.tbl:active{transform:scale(.98)}
+.tbl-utama{background:var(--hijau);color:#fff;border-color:var(--hijau)}
+.tbl-bahaya{background:var(--merah);color:#fff;border-color:var(--merah)}
+.tbl-penuh{display:flex;width:100%}
+.pil{padding:7px 12px;border-radius:999px;border:1px solid var(--garis);font-size:12.5px;color:var(--redup);
+  min-height:36px;display:inline-flex;align-items:center;gap:5px}
+.pil.aktif{background:var(--hijau);border-color:var(--hijau);color:#fff;font-weight:550}
+.pils{display:flex;flex-wrap:wrap;gap:7px}
+
+.bar{height:8px;border-radius:999px;background:var(--lembut);overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:999px;transition:width .5s}
+
+.label{display:block;font-size:12px;color:var(--redup);margin-bottom:5px;font-weight:550}
+.bidang+.bidang{margin-top:12px}
+
+.nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--kartu);
+  border-top:1px solid var(--garis);padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:40}
+.nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;
+  font-size:10.5px;color:var(--samar);min-height:48px}
+.nav button.aktif{color:var(--hijau2);font-weight:650}
+@media(min-width:900px){ .nav{display:none} }
+
+.sisi{display:none}
+@media(min-width:900px){
+  .sisi{display:block;width:210px;flex:0 0 210px;padding:24px 14px;position:sticky;top:0;height:100vh;
+    border-right:1px solid var(--garis)}
+  .sisi button{display:flex;width:100%;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r2);
+    color:var(--redup);font-size:14px;min-height:44px}
+  .sisi button.aktif{background:var(--hijau);color:#fff;font-weight:600}
+}
+
+.ambang{position:fixed;right:18px;bottom:88px;z-index:41;background:var(--hijau);color:#fff;
+  border-radius:999px;padding:14px 20px;font-weight:650;font-size:14px;box-shadow:0 8px 24px rgba(4,120,87,.35);
+  display:flex;align-items:center;gap:8px}
+@media(min-width:900px){ .ambang{display:none} }
+
+.tirai{position:fixed;inset:0;background:rgba(5,12,10,.55);z-index:60;display:flex;align-items:flex-end;justify-content:center}
+@media(min-width:640px){ .tirai{align-items:center} }
+.lembar{background:var(--kartu);width:100%;max-width:520px;max-height:92vh;overflow-y:auto;
+  border-radius:22px 22px 0 0;border:1px solid var(--garis)}
+@media(min-width:640px){ .lembar{border-radius:22px} }
+.lembar-kepala{position:sticky;top:0;background:var(--kartu);border-bottom:1px solid var(--garis);
+  padding:14px 16px;display:flex;align-items:center;justify-content:space-between;z-index:2}
+.lembar-isi{padding:16px}
+
+.roti{position:fixed;left:50%;transform:translateX(-50%);bottom:150px;z-index:70;background:#0c1a16;color:#fff;
+  border-radius:999px;padding:10px 16px;font-size:13px;display:flex;align-items:center;gap:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,.3)}
+html[data-tema="gelap"] .roti{background:#e9f0ed;color:#0c1a16}
+
+.peringatan{border-radius:var(--r2);padding:11px 13px;display:flex;gap:10px;align-items:flex-start;font-size:13px;
+  border:1px solid transparent}
+.p-bahaya{background:rgba(225,29,72,.10);border-color:rgba(225,29,72,.3)}
+.p-waspada{background:rgba(217,119,6,.10);border-color:rgba(217,119,6,.3)}
+.p-info{background:var(--lembut);border-color:var(--garis)}
+
+.tabel{width:100%;border-collapse:collapse;font-size:13px}
+.tabel th{text-align:left;font-weight:550;color:var(--redup);font-size:11.5px;padding:7px 4px;
+  border-bottom:1px solid var(--garis)}
+.tabel td{padding:8px 4px;border-bottom:1px solid var(--garis)}
+.ka{text-align:right}
+
+.puncak{background:linear-gradient(145deg,#047857,#0f766e 55%,#115e59);color:#fff;border-radius:22px;padding:18px}
+.puncak .sub,.puncak .samar{color:rgba(224,247,239,.82)}
+.kotakputih{background:rgba(255,255,255,.12);border-radius:14px;padding:10px 12px}
+
+.kosong{border:1px dashed var(--garis);border-radius:var(--r);padding:26px 18px;text-align:center;color:var(--redup);font-size:13.5px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--garis);border-radius:999px;
+  padding:7px 11px;font-size:12.5px;min-height:38px}
+.ikon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:17px;flex:0 0 38px}
+.memuat{display:flex;height:100vh;align-items:center;justify-content:center;color:var(--redup);font-size:14px}
+
+@media print{
+  .nav,.sisi,.ambang,.tbl,.pil,.roti{display:none !important}
+  .utama{padding:0}
+  .kartu{break-inside:avoid;border-color:#ccc}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+<div id="akar"><div class="memuat">Memuat My Finance…</div></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js" crossorigin></script>
+
+<script type="text/babel" data-presets="react">
+const {useState,useEffect,useMemo,useRef,useCallback} = React;
+
+/* ================= KONSTANTA ================= */
+const KUNCI = "myfinance.v2";
+const KUNCI_CADANGAN = ["myfinance.v2.cad1","myfinance.v2.cad2","myfinance.v2.cad3"];
+
+const POS_BAWAAN = [
+  {id:"kebutuhan", nama:"Kebutuhan",   ikon:"🏠", warna:"#0ea5e9", persen:50},
+  {id:"keinginan", nama:"Keinginan",   ikon:"🎈", warna:"#a855f7", persen:20},
+  {id:"tabungan",  nama:"Tabungan",    ikon:"🏦", warna:"#10b981", persen:20},
+  {id:"darurat",   nama:"Dana Darurat",ikon:"🛟", warna:"#f59e0b", persen:5},
+  {id:"sedekah",   nama:"Sedekah",     ikon:"🤲", warna:"#14b8a6", persen:5},
+];
+
+const KAT_KELUAR = [
+  {id:"makanan",      nama:"Makanan",       ikon:"🍚", warna:"#f97316", pos:"kebutuhan"},
+  {id:"transportasi", nama:"Transportasi",  ikon:"🛵", warna:"#3b82f6", pos:"kebutuhan"},
+  {id:"tagihan",      nama:"Tagihan",       ikon:"🧾", warna:"#ef4444", pos:"kebutuhan"},
+  {id:"rumah",        nama:"Rumah",         ikon:"🏡", warna:"#0891b2", pos:"kebutuhan"},
+  {id:"kesehatan",    nama:"Kesehatan",     ikon:"💊", warna:"#ec4899", pos:"kebutuhan"},
+  {id:"pendidikan",   nama:"Pendidikan",    ikon:"📚", warna:"#6366f1", pos:"kebutuhan"},
+  {id:"belanja",      nama:"Belanja",       ikon:"🛍️", warna:"#a855f7", pos:"keinginan"},
+  {id:"hiburan",      nama:"Hiburan",       ikon:"🎬", warna:"#eab308", pos:"keinginan"},
+  {id:"langganan",    nama:"Langganan",     ikon:"📺", warna:"#0ea5e9", pos:"keinginan"},
+  {id:"lainnya",      nama:"Lainnya",       ikon:"📦", warna:"#94a3b8", pos:"keinginan"},
+  {id:"tabungan",     nama:"Tabungan",      ikon:"🏦", warna:"#10b981", pos:"tabungan"},
+  {id:"darurat",      nama:"Dana Darurat",  ikon:"🛟", warna:"#f59e0b", pos:"darurat"},
+  {id:"sedekah",      nama:"Sedekah",       ikon:"🤲", warna:"#14b8a6", pos:"sedekah"},
+];
+const KAT_MASUK = [
+  {id:"gaji",       nama:"Gaji",      ikon:"💼", warna:"#059669"},
+  {id:"usaha",      nama:"Usaha",     ikon:"🏪", warna:"#0d9488"},
+  {id:"freelance",  nama:"Freelance", ikon:"🧑‍💻", warna:"#22c55e"},
+  {id:"investasi",  nama:"Hasil Investasi", ikon:"📈", warna:"#84cc16"},
+  {id:"bonus",      nama:"Bonus",     ikon:"🎁", warna:"#4ade80"},
+  {id:"lain-masuk", nama:"Lainnya",   ikon:"📦", warna:"#94a3b8"},
+];
+const SEMUA_KAT = [...KAT_KELUAR, ...KAT_MASUK];
+const kat = id => SEMUA_KAT.find(k=>k.id===id) || {id:"lainnya",nama:"Lainnya",ikon:"📦",warna:"#94a3b8",pos:"keinginan"};
+/* pos tempat uang disisihkan, bukan dibelanjakan */
+const POS_SIMPAN = ["tabungan","darurat"];
+
+const METODE = [
+  {id:"tunai",   nama:"Tunai",   ikon:"💵"},
+  {id:"bank",    nama:"Bank",    ikon:"🏦"},
+  {id:"ewallet", nama:"E-wallet",ikon:"📱"},
+  {id:"kartu",   nama:"Kartu Kredit", ikon:"💳"},
+];
+const met = id => METODE.find(m=>m.id===id) || METODE[0];
+
+const TIPE_ASET = ["Tunai","Rekening Bank","Saham","Reksa Dana","Crypto","Emas","Properti","Kendaraan","Piutang"];
+const TIPE_HUTANG = ["Cicilan","Kartu Kredit","Pinjaman","Hutang Pribadi"];
+
+const BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+const BLN = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+const HARI = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+
+const TEMPLAT = [
+  {nama:"50 / 30 / 20", ket:"Paling umum dan seimbang", bagi:{kebutuhan:50,keinginan:20,tabungan:20,darurat:5,sedekah:5}},
+  {nama:"Hemat agresif", ket:"Kejar target cepat", bagi:{kebutuhan:45,keinginan:10,tabungan:30,darurat:10,sedekah:5}},
+  {nama:"Kebutuhan berat", ket:"Pemasukan pas-pasan", bagi:{kebutuhan:65,keinginan:15,tabungan:10,darurat:5,sedekah:5}},
+];
+
+/* ================= UTILITAS ================= */
+const nf = new Intl.NumberFormat("id-ID");
+const rp  = n => "Rp " + nf.format(Math.round(n||0));
+const rpk = n => {                       // ringkas untuk bagan
+  const a = Math.abs(n||0), t = n<0?"-":"";
+  if(a>=1e9) return t+"Rp "+(a/1e9).toFixed(1).replace(".",",")+" M";
+  if(a>=1e6) return t+"Rp "+(a/1e6).toFixed(1).replace(".",",")+" jt";
+  if(a>=1e3) return t+"Rp "+Math.round(a/1e3)+" rb";
+  return t+"Rp "+Math.round(a);
+};
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const angka = s => { const n = Number(String(s).replace(/[^\d]/g,"")); return Number.isFinite(n)?n:0; };
+const ketik = s => { const n = angka(s); return n===0?"":nf.format(n); };
+
+/* tanggal lokal — jangan pakai toISOString, bisa mundur sehari di WIB */
+const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const hariIni = () => iso(new Date());
+const kunciBulan = t => t.slice(0,7);
+const bulanIni = () => hariIni().slice(0,7);
+const jmlHari = mk => new Date(+mk.slice(0,4), +mk.slice(5,7), 0).getDate();
+const namaBulan = mk => BULAN[+mk.slice(5,7)-1] + " " + mk.slice(0,4);
+const tglPanjang = t => { const [y,m,d]=t.split("-"); return `${+d} ${BULAN[+m-1]} ${y}`; };
+const tglPendek  = t => { const [y,m,d]=t.split("-"); return `${+d} ${BLN[+m-1]} ${y}`; };
+const geserBulan = (mk,n) => { const d=new Date(+mk.slice(0,4), +mk.slice(5,7)-1+n, 1); return iso(d).slice(0,7); };
+const labelHari = t => {
+  if(t===hariIni()) return "Hari ini";
+  const k=new Date(); k.setDate(k.getDate()-1);
+  if(t===iso(k)) return "Kemarin";
+  return `${HARI[new Date(t+"T00:00:00").getDay()]}, ${tglPendek(t)}`;
+};
+
+/* terbilang singkat, untuk mencegah salah nol */
+function terbilang(n){
+  if(!n) return "";
+  const satuan=["","satu","dua","tiga","empat","lima","enam","tujuh","delapan","sembilan","sepuluh","sebelas"];
+  const kecil = x => {
+    if(x<12) return satuan[x];
+    if(x<20) return satuan[x-10]+" belas";
+    if(x<100) return satuan[Math.floor(x/10)]+" puluh"+(x%10?" "+satuan[x%10]:"");
+    if(x<200) return "seratus"+(x%100?" "+kecil(x%100):"");
+    if(x<1000) return satuan[Math.floor(x/100)]+" ratus"+(x%100?" "+kecil(x%100):"");
+    return "";
+  };
+  let sisa=n, hasil=[];
+  const unit=[[1e9,"miliar"],[1e6,"juta"],[1e3,"ribu"]];
+  for(const [nilai,nama] of unit){
+    const b=Math.floor(sisa/nilai);
+    if(b){ hasil.push((nilai===1e3&&b===1?"se":kecil(b)+" ")+nama); sisa-=b*nilai; }
+  }
+  if(sisa) hasil.push(kecil(sisa));
+  return hasil.join(" ").replace(/\s+/g," ").trim()+" rupiah";
+}
+
+/* ================= PENYIMPANAN ================= */
+function adaPenyimpanan(){
+  try{ localStorage.setItem("__tes__","1"); localStorage.removeItem("__tes__"); return true; }
+  catch(e){ return false; }
+}
+function muat(){
+  const coba = [KUNCI, ...KUNCI_CADANGAN];
+  for(const k of coba){
+    try{
+      const teks = localStorage.getItem(k);
+      if(!teks) continue;
+      const d = JSON.parse(teks);
+      if(d && Array.isArray(d.transaksi)) return {data:migrasi(d), dariCadangan:k!==KUNCI};
+    }catch(e){ /* berkas rusak, coba cadangan berikutnya */ }
+  }
+  return {data:null, dariCadangan:false};
+}
+let putaran = 0;
+function simpan(data){
+  try{
+    const teks = JSON.stringify(data);
+    localStorage.setItem(KUNCI, teks);
+    putaran++;
+    if(putaran % 5 === 0) localStorage.setItem(KUNCI_CADANGAN[(putaran/5) % 3 | 0], teks);
+    return true;
+  }catch(e){ return false; }
+}
+function ukuranData(){
+  try{ return new Blob([localStorage.getItem(KUNCI)||""]).size; }catch(e){ return 0; }
+}
+/* migrasi: data lama tetap terbaca saat aplikasi berkembang */
+function migrasi(d){
+  const b = kosong();
+  return {
+    ...b, ...d,
+    v: 2,
+    profil:{...b.profil, ...(d.profil||{})},
+    setelan:{...b.setelan, ...(d.setelan||{})},
+    pos: Array.isArray(d.pos)&&d.pos.length ? d.pos : b.pos,
+    rencana: d.rencana||{},
+    transaksi:(d.transaksi||[]).map(t=>({...t, jenis:t.jenis||(t.type==="income"?"masuk":"keluar")})),
+    anggaran:d.anggaran||[], tagihan:d.tagihan||[], tujuan:d.tujuan||[], aset:d.aset||[], pintasan:d.pintasan||[],
+  };
+}
+function kosong(){
+  return {
+    v:2,
+    profil:{nama:"", emoji:"🙂"},
+    setelan:{tema:"sistem", pengingat:true, backupTerakhir:null, pinHash:null,
+             metodeTerakhir:{keluar:"ewallet", masuk:"bank"}, tutupPeringatan:{}, pemisahCsv:";", onboarding:false},
+    transaksi:[], pos:POS_BAWAAN.map(p=>({...p})), rencana:{},
+    anggaran:[], tagihan:[], tujuan:[], aset:[], pintasan:[],
+  };
+}
+
+/* ================= DATA CONTOH ================= */
+function acakan(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed);
+  t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+
+function dataContoh(){
+  const d = kosong();
+  const r = acakan(20261121);
+  const skrg = new Date();
+  const tgl = skrg.getDate();
+  d.profil = {nama:"Izzu", emoji:"🙂"};
+  d.setelan.onboarding = true;
+
+  const tx = (tanggal,jenis,kategori,nominal,catatan,metode)=>d.transaksi.push({
+    id:uid(), jenis, kategori, nominal:Math.round(nominal/500)*500, tanggal:iso(tanggal),
+    catatan, metode, dibuat:Date.now(), diubah:Date.now()
+  });
+
+  const pola = [
+    ["makanan",["Makan siang","Kopi","Sarapan","Belanja dapur","Makan malam"],15000,85000,8,"ewallet"],
+    ["transportasi",["Bensin","Ojek online","Parkir"],10000,120000,4,"ewallet"],
+    ["belanja",["Belanja bulanan","Baju"],120000,400000,2,"kartu"],
+    ["tagihan",["Listrik","Internet","Air"],90000,350000,3,"bank"],
+    ["rumah",["Sewa kos"],1000000,1000000,1,"bank"],
+    ["langganan",["Spotify","Netflix"],54000,65000,2,"kartu"],
+    ["hiburan",["Nongkrong","Bioskop"],45000,150000,2,"tunai"],
+  ];
+  const isi = (offset,batas)=>{
+    const y=skrg.getFullYear(), m=skrg.getMonth()-offset;
+    let total=0;
+    pola.forEach(([k,notes,min,max,n,metode])=>{
+      for(let i=0;i<n;i++){
+        const hari=Math.max(1,Math.min(batas,1+Math.floor(r()*batas)));
+        const nom=min+r()*(max-min); total+=nom;
+        tx(new Date(y,m,hari),"keluar",k,nom,notes[i%notes.length],metode);
+      }
+    });
+    return total;
+  };
+
+  /* 5 bulan lalu: pemasukan 5 jt, sisanya masuk tabungan — jadi saldo tidak menggelembung */
+  for(let o=5;o>=1;o--){
+    const y=skrg.getFullYear(), m=skrg.getMonth()-o, akhir=new Date(y,m+1,0).getDate();
+    tx(new Date(y,m,1),"masuk","gaji",4500000,"Gaji bulanan","bank");
+    tx(new Date(y,m,10),"masuk","freelance",500000,"Proyek kecil","bank");
+    const keluar = isi(o,akhir);
+    tx(new Date(y,m,Math.min(5,akhir)),"keluar","sedekah",250000,"Sedekah bulanan","bank");
+    const sisa = 5000000 - keluar - 250000;
+    if(sisa>200000){
+      tx(new Date(y,m,akhir),"keluar","tabungan",Math.round(sisa*0.5),"Setor tabungan","bank");
+      tx(new Date(y,m,akhir),"keluar","darurat",Math.round(sisa*0.2),"Isi dana darurat","bank");
+    }
+  }
+  /* bulan berjalan: pemasukan 5 juta persis, biar contoh pembagiannya jelas */
+  tx(new Date(skrg.getFullYear(),skrg.getMonth(),1),"masuk","gaji",4500000,"Gaji bulanan","bank");
+  if(tgl>=10) tx(new Date(skrg.getFullYear(),skrg.getMonth(),10),"masuk","freelance",500000,"Proyek kecil","bank");
+  isi(0,tgl);
+  if(tgl>=5) tx(new Date(skrg.getFullYear(),skrg.getMonth(),5),"keluar","sedekah",250000,"Sedekah bulanan","bank");
+  if(tgl>=7) tx(new Date(skrg.getFullYear(),skrg.getMonth(),7),"keluar","tabungan",700000,"Setor tabungan","bank");
+
+  const mk = bulanIni();
+  d.rencana[mk] = {pemasukan:5000000, pos:{kebutuhan:2500000, keinginan:1000000, tabungan:1000000, darurat:250000, sedekah:250000}};
+  d.anggaran = [
+    {id:uid(), kategori:"makanan",      batas:1200000, bulan:mk},
+    {id:uid(), kategori:"transportasi", batas:400000,  bulan:mk},
+    {id:uid(), kategori:"hiburan",      batas:300000,  bulan:mk},
+    {id:uid(), kategori:"belanja",      batas:500000,  bulan:mk},
+  ];
+  d.tagihan = [
+    {id:uid(), nama:"Sewa kos",  nominal:1000000, tanggal:1,  kategori:"rumah",     metode:"bank",  aktif:true, terakhirBayar:mk},
+    {id:uid(), nama:"Internet",  nominal:300000,  tanggal:20, kategori:"tagihan",   metode:"bank",  aktif:true, terakhirBayar:geserBulan(mk,-1)},
+    {id:uid(), nama:"Listrik",   nominal:250000,  tanggal:25, kategori:"tagihan",   metode:"ewallet", aktif:true, terakhirBayar:geserBulan(mk,-1)},
+    {id:uid(), nama:"Spotify",   nominal:54000,   tanggal:28, kategori:"langganan", metode:"kartu", aktif:true, terakhirBayar:geserBulan(mk,-1)},
+  ];
+  d.tujuan = [
+    {id:uid(), nama:"Dana Darurat 6 bulan", ikon:"🛟", target:18000000, terkumpul:5200000, tenggat:`${skrg.getFullYear()+1}-12-31`},
+    {id:uid(), nama:"Beli Laptop",          ikon:"💻", target:15000000, terkumpul:7500000, tenggat:`${skrg.getFullYear()+1}-06-30`},
+    {id:uid(), nama:"Umrah",                ikon:"🕋", target:35000000, terkumpul:4000000, tenggat:`${skrg.getFullYear()+2}-03-31`},
+  ];
+  d.aset = [
+    {id:uid(), jenis:"aset", tipe:"Tunai",         nama:"Dompet",        nominal:450000},
+    {id:uid(), jenis:"aset", tipe:"Rekening Bank", nama:"BCA",           nominal:3200000},
+    {id:uid(), jenis:"aset", tipe:"Rekening Bank", nama:"Tabungan BSI",  nominal:5200000},
+    {id:uid(), jenis:"aset", tipe:"Emas",          nama:"Emas 5 gram",   nominal:7500000},
+    {id:uid(), jenis:"hutang", tipe:"Cicilan",     nama:"Cicilan motor", nominal:4800000},
+    {id:uid(), jenis:"hutang", tipe:"Kartu Kredit",nama:"Tagihan kartu", nominal:1200000},
+  ];
+  d.pintasan = [
+    {id:uid(), jenis:"keluar", kategori:"makanan",      nominal:25000, catatan:"Makan siang", metode:"ewallet"},
+    {id:uid(), jenis:"keluar", kategori:"transportasi", nominal:15000, catatan:"Ojek online", metode:"ewallet"},
+    {id:uid(), jenis:"keluar", kategori:"makanan",      nominal:18000, catatan:"Kopi",        metode:"tunai"},
+  ];
+  d.transaksi.sort((a,b)=> a.tanggal<b.tanggal?1:-1);
+  return d;
+}
+
+/* ================= HITUNGAN ================= */
+/* Pemisahan penting: pengeluaran murni ≠ uang yang disisihkan ke tabungan */
+function ringkasBulan(db, mk){
+  const list = db.transaksi.filter(t=>kunciBulan(t.tanggal)===mk);
+  const masuk  = list.filter(t=>t.jenis==="masuk").reduce((s,t)=>s+t.nominal,0);
+  const keluarSemua = list.filter(t=>t.jenis==="keluar").reduce((s,t)=>s+t.nominal,0);
+  const disisihkan  = list.filter(t=>t.jenis==="keluar" && POS_SIMPAN.includes(kat(t.kategori).pos))
+                          .reduce((s,t)=>s+t.nominal,0);
+  const belanja = keluarSemua - disisihkan;
+  return {list, masuk, keluarSemua, disisihkan, belanja, sisa:masuk-keluarSemua};
+}
+function saldoTotal(db){
+  return db.transaksi.reduce((s,t)=> s + (t.jenis==="masuk"? t.nominal : t.jenis==="keluar"? -t.nominal : 0), 0);
+}
+/* Pemakaian tiap metode bayar dalam sebulan.
+   Sengaja bukan "saldo per akun": saldo akun hanya benar kalau tiap pemindahan
+   dana dicatat rapi, dan kalau tidak, angkanya menyesatkan. */
+function pemakaianMetode(db, mk){
+  const m = {};
+  db.transaksi.filter(t=>kunciBulan(t.tanggal)===mk && t.jenis==="keluar").forEach(t=>{
+    m[t.metode] = m[t.metode] || {keluar:0, n:0};
+    m[t.metode].keluar += t.nominal; m[t.metode].n++;
+  });
+  return METODE.map(x=>({...x, ...(m[x.id]||{keluar:0,n:0})})).filter(x=>x.keluar>0)
+    .sort((a,b)=>b.keluar-a.keluar);
+}
+function rencanaBulan(db, mk){
+  const r = db.rencana[mk];
+  if(r) return r;
+  const { masuk } = ringkasBulan(db, mk);
+  const dasar = masuk || 0;
+  const pos = {};
+  db.pos.forEach(p=> pos[p.id] = Math.round(dasar*p.persen/100));
+  return {pemasukan:dasar, pos};
+}
+function pakaiPos(db, mk){
+  const { list } = ringkasBulan(db, mk);
+  const m = {};
+  list.filter(t=>t.jenis==="keluar").forEach(t=>{
+    const p = kat(t.kategori).pos || "keinginan";
+    m[p] = (m[p]||0) + t.nominal;
+  });
+  return m;
+}
+function tagihanBulan(db, mk){
+  return db.tagihan.filter(t=>t.aktif!==false).map(t=>({...t, lunas: t.terakhirBayar===mk}));
+}
+function belumBayar(db, mk){
+  return tagihanBulan(db,mk).filter(t=>!t.lunas).reduce((s,t)=>s+t.nominal,0);
+}
+
+/* perbandingan setara: 1–21 Nov dibanding 1–21 Okt, bukan Oktober penuh */
+function belanjaSampaiTgl(db, mk, tanggal){
+  return db.transaksi.filter(t=>
+    kunciBulan(t.tanggal)===mk && t.jenis==="keluar" &&
+    !POS_SIMPAN.includes(kat(t.kategori).pos) && +t.tanggal.slice(8) <= tanggal
+  ).reduce((s,t)=>s+t.nominal,0);
+}
+
+function peringatan(db){
+  const mk = bulanIni(), tgl = new Date().getDate(), total = jmlHari(mk), sisaHari = Math.max(1,total-tgl+1);
+  const R = ringkasBulan(db,mk), rencana = rencanaBulan(db,mk), pakai = pakaiPos(db,mk);
+  const out = [];
+  const tutup = db.setelan.tutupPeringatan||{};
+
+  /* 1. pos jebol atau hampir */
+  db.pos.forEach(p=>{
+    const jatah = rencana.pos[p.id]||0; if(!jatah) return;
+    const kepakai = pakai[p.id]||0, pct = kepakai/jatah*100;
+    if(kepakai>jatah) out.push({id:"pos-"+p.id, level:"bahaya", judul:`Pos ${p.nama} sudah lewat batas`,
+      pesan:`Terpakai ${rp(kepakai)} dari jatah ${rp(jatah)} — lebih ${rp(kepakai-jatah)}. Tahan dulu sampai ${tglPendek(iso(new Date(new Date().getFullYear(),new Date().getMonth()+1,0)))}.`, tab:"alokasi", aksi:"Lihat alokasi"});
+    else if(pct>=100) out.push({id:"pos-"+p.id, level:"waspada", judul:`Jatah pos ${p.nama} sudah habis`,
+      pesan:`Terpakai pas ${rp(kepakai)}, sesuai rencana. Sisa ${sisaHari} hari jangan dipakai dari pos ini lagi.`, tab:"alokasi", aksi:"Lihat alokasi"});
+    else if(pct>=80) out.push({id:"pos-"+p.id, level:"waspada", judul:`Pos ${p.nama} tinggal ${rp(jatah-kepakai)}`,
+      pesan:`${Math.round(pct)}% jatah sudah dipakai, sisa ${sisaHari} hari lagi.`, tab:"alokasi", aksi:"Lihat alokasi"});
+  });
+
+  /* 2. laju belanja */
+  const jatahBelanja = db.pos.filter(p=>!POS_SIMPAN.includes(p.id)).reduce((s,p)=>s+(rencana.pos[p.id]||0),0);
+  if(jatahBelanja>0 && tgl>=5){
+    const proyeksi = Math.round(R.belanja/tgl*total);
+    if(proyeksi > jatahBelanja*1.05){
+      out.push({id:"laju", level:"bahaya", judul:"Laju belanja terlalu cepat",
+        pesan:`Rata-rata ${rp(R.belanja/tgl)} per hari. Kalau terus begini, akhir bulan tembus ${rp(proyeksi)} — lebih ${rp(proyeksi-jatahBelanja)} dari jatah. Turunkan ke ${rp(Math.max(0,(jatahBelanja-R.belanja)/sisaHari))} per hari.`,
+        tab:"alokasi", aksi:"Atur ulang"});
+    }
+  }
+
+  /* 3. tagihan jatuh tempo */
+  tagihanBulan(db,mk).filter(t=>!t.lunas).forEach(t=>{
+    const selisih = t.tanggal - tgl;
+    if(selisih < 0) out.push({id:"tag-"+t.id, level:"bahaya", judul:`${t.nama} lewat jatuh tempo`,
+      pesan:`${rp(t.nominal)}, jatuh tempo tanggal ${t.tanggal}, telat ${-selisih} hari.`, tab:"rencana", aksi:"Tandai lunas"});
+    else if(selisih <= 3) out.push({id:"tag-"+t.id, level:"waspada", judul:`${t.nama} jatuh tempo ${selisih===0?"hari ini":`${selisih} hari lagi`}`,
+      pesan:`Siapkan ${rp(t.nominal)} lewat ${met(t.metode).nama}.`, tab:"rencana", aksi:"Tandai lunas"});
+  });
+
+  /* 4. anggaran kategori */
+  db.anggaran.filter(a=>a.bulan===mk).forEach(a=>{
+    const kepakai = R.list.filter(t=>t.jenis==="keluar"&&t.kategori===a.kategori).reduce((s,t)=>s+t.nominal,0);
+    const pct = kepakai/a.batas*100;
+    if(pct>=100) out.push({id:"ang-"+a.id, level:"bahaya", judul:`Anggaran ${kat(a.kategori).nama} jebol`,
+      pesan:`${rp(kepakai)} dari batas ${rp(a.batas)}.`, tab:"rencana", aksi:"Lihat anggaran"});
+    else if(pct>=80) out.push({id:"ang-"+a.id, level:"waspada", judul:`Anggaran ${kat(a.kategori).nama} ${Math.round(pct)}%`,
+      pesan:`Sisa ${rp(a.batas-kepakai)} untuk ${sisaHari} hari.`, tab:"rencana", aksi:"Lihat anggaran"});
+  });
+
+  /* 5. saldo menipis — tagihan yang belum dibayar ikut dipotong */
+  const saldo = saldoTotal(db), belum = belumBayar(db,mk);
+  const tersedia = saldo - belum;
+  const lajuHarian = R.belanja/Math.max(1,tgl);
+  if(lajuHarian>0){
+    const bertahan = Math.floor(tersedia/lajuHarian);
+    if(bertahan < 10) out.push({id:"saldo", level: bertahan<4?"bahaya":"waspada", judul:`Saldo cukup untuk sekitar ${Math.max(0,bertahan)} hari`,
+      pesan:`Saldo ${rp(saldo)}, tagihan belum dibayar ${rp(belum)}, jadi tersisa ${rp(tersedia)} dengan laju ${rp(lajuHarian)} per hari.`, tab:"laporan", aksi:"Lihat laporan"});
+  }
+
+  /* 6. total alokasi tidak masuk akal */
+  const totalAlokasi = Object.values(rencana.pos).reduce((s,n)=>s+n,0);
+  if(rencana.pemasukan>0 && totalAlokasi > rencana.pemasukan*1.001)
+    out.push({id:"alokasi-lebih", level:"bahaya", judul:"Alokasi melebihi pemasukan",
+      pesan:`Total pembagian ${rp(totalAlokasi)} padahal pemasukan rencana ${rp(rencana.pemasukan)}. Kurangi ${rp(totalAlokasi-rencana.pemasukan)}.`, tab:"alokasi", aksi:"Perbaiki"});
+
+  /* 7. transaksi janggal */
+  if(R.masuk>0){
+    const besar = R.list.filter(t=>t.jenis==="keluar" && t.nominal > R.masuk*0.25);
+    besar.forEach(t=> out.push({id:"besar-"+t.id, level:"info", judul:"Pengeluaran besar bulan ini",
+      pesan:`${t.catatan||kat(t.kategori).nama} ${rp(t.nominal)} — ${Math.round(t.nominal/R.masuk*100)}% dari pemasukan bulan ini.`, tab:"riwayat", aksi:"Cek"}));
+  }
+
+  /* 8. belum catat hari ini */
+  if(db.setelan.pengingat && !db.transaksi.some(t=>t.tanggal===hariIni()))
+    out.push({id:"catat", level:"info", judul:"Belum ada catatan hari ini", pesan:"Catat sekarang mumpung masih ingat.", aksi:"Catat", aksiTambah:true});
+
+  /* 9. belum cadangan */
+  const bk = db.setelan.backupTerakhir;
+  if(db.transaksi.length>=15 && (!bk || (Date.now()-new Date(bk))/864e5 > 30))
+    out.push({id:"backup", level:"waspada", judul:"Sudah lama tidak mencadangkan",
+      pesan:"Data hanya ada di perangkat ini. Unduh cadangan dan simpan di Drive.", tab:"setelan", aksi:"Cadangkan"});
+
+  const urut = {bahaya:0, waspada:1, info:2};
+  return out.filter(p=> tutup[p.id] !== hariIni()).sort((a,b)=>urut[a.level]-urut[b.level]);
+}
+
+/* ================= BAGAN (SVG, tanpa pustaka) ================= */
+
+/* Donat: pembagian menjadi irisan, dengan angka di tengah */
+function Donat({data, tengah, bawah, ukuran=160, tebal=22}){
+  const total = data.reduce((s,d)=>s+d.nilai,0);
+  const R = (ukuran-tebal)/2, K = 2*Math.PI*R;
+  let jalan = 0;
+  return (
+    <svg viewBox={`0 0 ${ukuran} ${ukuran}`} style={{width:ukuran, maxWidth:"100%", height:"auto"}} role="img">
+      <circle cx={ukuran/2} cy={ukuran/2} r={R} fill="none" stroke="var(--lembut)" strokeWidth={tebal}/>
+      {total>0 && data.map((d,i)=>{
+        const panjang = d.nilai/total*K;
+        const el = (
+          <circle key={i} cx={ukuran/2} cy={ukuran/2} r={R} fill="none" stroke={d.warna} strokeWidth={tebal}
+            strokeDasharray={`${Math.max(0,panjang-1.5)} ${K}`} strokeDashoffset={-jalan}
+            transform={`rotate(-90 ${ukuran/2} ${ukuran/2})`} strokeLinecap="butt"/>
+        );
+        jalan += panjang;
+        return el;
+      })}
+      {tengah && <text x="50%" y="47%" textAnchor="middle" fontSize="15" fontWeight="650"
+        fill="var(--tinta)" fontFamily="var(--mono)">{tengah}</text>}
+      {bawah && <text x="50%" y="61%" textAnchor="middle" fontSize="10" fill="var(--redup)">{bawah}</text>}
+    </svg>
+  );
+}
+
+/* Batang bertumpuk mendatar: "5 juta dibagi ke mana" dalam satu garis */
+function BatangTumpuk({data, tinggi=26}){
+  const total = data.reduce((s,d)=>s+d.nilai,0) || 1;
+  let x = 0;
+  return (
+    <svg viewBox={`0 0 100 ${tinggi}`} preserveAspectRatio="none" style={{width:"100%",height:tinggi}} role="img">
+      {data.map((d,i)=>{
+        const w = d.nilai/total*100;
+        const el = <rect key={i} x={x} y="0" width={Math.max(0,w-0.4)} height={tinggi} fill={d.warna} rx="1.2"/>;
+        x += w; return el;
+      })}
+    </svg>
+  );
+}
+
+/* Batang berkelompok: masuk vs keluar per bulan */
+function BatangGrup({data, tinggi=170}){
+  const maks = Math.max(1, ...data.flatMap(d=>[d.masuk,d.keluar]));
+  const L = data.length, lebarSlot = 100/L, lebarBar = Math.min(9, lebarSlot*0.3);
+  const pad = 22;
+  return (
+    <div>
+      <svg viewBox={`0 0 100 ${tinggi}`} preserveAspectRatio="none" style={{width:"100%",height:tinggi}} role="img">
+        {[0,.25,.5,.75,1].map((g,i)=>(
+          <line key={i} x1="0" x2="100" y1={pad+(tinggi-pad*1.4)*(1-g)} y2={pad+(tinggi-pad*1.4)*(1-g)}
+            stroke="var(--garis)" strokeWidth="0.6" vectorEffect="non-scaling-stroke"/>
+        ))}
+        {data.map((d,i)=>{
+          const x0 = i*lebarSlot + lebarSlot/2;
+          const h = v => (tinggi-pad*1.4)*(v/maks);
+          return (
+            <g key={i}>
+              <rect x={x0-lebarBar-0.6} y={pad+(tinggi-pad*1.4)-h(d.masuk)} width={lebarBar} height={Math.max(0,h(d.masuk))} fill="#10b981" rx="1"/>
+              <rect x={x0+0.6} y={pad+(tinggi-pad*1.4)-h(d.keluar)} width={lebarBar} height={Math.max(0,h(d.keluar))} fill="#f43f5e" rx="1"/>
+            </g>
+          );
+        })}
+      </svg>
+      <div style={{display:"flex",marginTop:4}}>
+        {data.map((d,i)=>(
+          <div key={i} style={{flex:1,textAlign:"center",fontSize:10.5,color:"var(--redup)"}}>{d.label}</div>
+        ))}
+      </div>
+      <div className="baris" style={{gap:14,marginTop:8,fontSize:11.5,color:"var(--redup)"}}>
+        <span className="baris" style={{gap:5}}><i style={{width:9,height:9,borderRadius:3,background:"#10b981",display:"block"}}/>Masuk</span>
+        <span className="baris" style={{gap:5}}><i style={{width:9,height:9,borderRadius:3,background:"#f43f5e",display:"block"}}/>Keluar</span>
+        <span style={{marginLeft:"auto"}}>Tertinggi {rpk(maks)}</span>
+      </div>
+    </div>
+  );
+}
+
+/* Garis area: perjalanan saldo */
+function Garis({data, tinggi=140, warna="#10b981"}){
+  if(data.length<2) return <div className="kosong">Butuh minimal dua bulan data untuk menggambar grafik ini.</div>;
+  const nilai = data.map(d=>d.nilai);
+  const maks = Math.max(...nilai), min = Math.min(0, ...nilai), rentang = (maks-min)||1;
+  const titik = data.map((d,i)=>[ i/(data.length-1)*100, tinggi-6-((d.nilai-min)/rentang)*(tinggi-20) ]);
+  const garis = titik.map(p=>`${p[0]},${p[1]}`).join(" ");
+  const area = `0,${tinggi} ` + garis + ` 100,${tinggi}`;
+  return (
+    <div>
+      <svg viewBox={`0 0 100 ${tinggi}`} preserveAspectRatio="none" style={{width:"100%",height:tinggi}} role="img">
+        <defs>
+          <linearGradient id="gradSaldo" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={warna} stopOpacity="0.30"/>
+            <stop offset="100%" stopColor={warna} stopOpacity="0"/>
+          </linearGradient>
+        </defs>
+        <polygon points={area} fill="url(#gradSaldo)"/>
+        <polyline points={garis} fill="none" stroke={warna} strokeWidth="2" vectorEffect="non-scaling-stroke"
+          strokeLinejoin="round" strokeLinecap="round"/>
+      </svg>
+      <div className="antara" style={{fontSize:10.5,color:"var(--redup)",marginTop:2}}>
+        <span>{data[0].label} · {rpk(data[0].nilai)}</span>
+        <span>{data[data.length-1].label} · {rpk(data[data.length-1].nilai)}</span>
+      </div>
+    </div>
+  );
+}
+
+/* Garis mungil tanpa sumbu, untuk kartu saldo */
+function Mungil({nilai, tinggi=40, warna="#ffffff"}){
+  const maks = Math.max(1, ...nilai);
+  const titik = nilai.map((v,i)=>`${i/(nilai.length-1)*100},${tinggi-2-(v/maks)*(tinggi-8)}`).join(" ");
+  return (
+    <svg viewBox={`0 0 100 ${tinggi}`} preserveAspectRatio="none" style={{width:"100%",height:tinggi}} aria-hidden="true">
+      <polygon points={`0,${tinggi} ${titik} 100,${tinggi}`} fill={warna} fillOpacity="0.18"/>
+      <polyline points={titik} fill="none" stroke={warna} strokeWidth="1.8" vectorEffect="non-scaling-stroke" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+/* ================= KOMPONEN UMUM ================= */
+function Kartu({judul, aksi, anak, children, pad=16}){
+  return (
+    <div className="kartu" style={{padding:pad}}>
+      {(judul||aksi) && (
+        <div className="antara" style={{marginBottom:10}}>
+          <h3 className="judul">{judul}</h3>
+          {aksi}
+        </div>
+      )}
+      {children||anak}
+    </div>
+  );
+}
+
+function Bar({persen, warna}){
+  const w = Math.min(100, Math.max(0, persen||0));
+  const c = warna || (persen>=100?"var(--merah)" : persen>=80?"var(--kuning)" : "var(--hijau2)");
+  return <div className="bar"><i style={{width:w+"%", background:c}}/></div>;
+}
+
+function Lembar({buka, tutup, judul, children}){
+  useEffect(()=>{
+    if(!buka) return;
+    const h = e => e.key==="Escape" && tutup();
+    window.addEventListener("keydown",h);
+    document.body.style.overflow="hidden";
+    return ()=>{ window.removeEventListener("keydown",h); document.body.style.overflow=""; };
+  },[buka,tutup]);
+  if(!buka) return null;
+  return (
+    <div className="tirai" onClick={e=>{ if(e.target===e.currentTarget) tutup(); }}>
+      <div className="lembar">
+        <div className="lembar-kepala">
+          <h2 style={{fontSize:15}}>{judul}</h2>
+          <button onClick={tutup} aria-label="Tutup" style={{fontSize:20,color:"var(--redup)",padding:"4px 8px"}}>✕</button>
+        </div>
+        <div className="lembar-isi">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function Bidang({label, petunjuk, children}){
+  return (
+    <div className="bidang">
+      <span className="label">{label}</span>
+      {children}
+      {petunjuk && <div className="samar" style={{marginTop:4}}>{petunjuk}</div>}
+    </div>
+  );
+}
+
+function Kosong({ikon, teks, aksi}){
+  return (
+    <div className="kosong">
+      <div style={{fontSize:26,marginBottom:6}}>{ikon}</div>
+      <div>{teks}</div>
+      {aksi && <div style={{marginTop:10}}>{aksi}</div>}
+    </div>
+  );
+}
+
+function BarisTx({t, klik, tampilPos}){
+  const k = kat(t.kategori), m = met(t.metode);
+  const pindah = t.jenis==="pindah";
+  return (
+    <button onClick={klik} style={{display:"flex",width:"100%",gap:10,alignItems:"center",padding:"9px 2px",textAlign:"left"}}>
+      <div className="ikon" style={{background:pindah?"var(--lembut)":k.warna+"22"}}>{pindah?"🔄":k.ikon}</div>
+      <div className="isi">
+        <div className="potong" style={{fontSize:14,fontWeight:550}}>
+          {pindah ? `Pindah ke ${met(t.metodeTujuan).nama}` : (t.catatan || k.nama)}
+        </div>
+        <div className="potong samar">
+          {pindah ? `${m.nama} → ${met(t.metodeTujuan).nama}` : `${k.nama} · ${m.ikon} ${m.nama}`}
+          {tampilPos && !pindah && t.jenis==="keluar" ? ` · pos ${k.pos}` : ""} · {tglPendek(t.tanggal)}
+        </div>
+      </div>
+      <div className="num" style={{fontSize:14,fontWeight:650,
+        color: pindah?"var(--redup)" : t.jenis==="masuk"?"var(--hijau)":"var(--merah)"}}>
+        {pindah?"":t.jenis==="masuk"?"+":"−"}{nf.format(t.nominal)}
+      </div>
+    </button>
+  );
+}
+
+function InputNominal({nilai, set, fokus}){
+  return (
+    <div>
+      <div className="baris" style={{alignItems:"baseline",gap:8}}>
+        <span style={{fontSize:17,color:"var(--redup)"}}>Rp</span>
+        <input inputMode="numeric" autoFocus={fokus} value={nilai} placeholder="0"
+          onChange={e=>set(ketik(e.target.value))}
+          style={{border:"none",borderBottom:"1px solid var(--garis)",borderRadius:0,padding:"2px 0 6px",
+                  fontFamily:"var(--mono)",fontSize:30,fontWeight:650,background:"transparent"}}/>
+      </div>
+      {angka(nilai)>0 && <div className="samar" style={{marginTop:5}}>{terbilang(angka(nilai))}</div>}
+    </div>
+  );
+}
+
+function PilihKategori({jenis, nilai, set}){
+  const daftar = jenis==="masuk" ? KAT_MASUK : KAT_KELUAR;
+  return (
+    <div className="grid4">
+      {daftar.map(k=>(
+        <button key={k.id} onClick={()=>set(k.id)}
+          style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"9px 2px",
+            border:"1px solid "+(nilai===k.id?"var(--hijau2)":"var(--garis)"), borderRadius:12,
+            fontSize:10.5, lineHeight:1.15, minHeight:62,
+            color: nilai===k.id?"var(--hijau)":"var(--tinta)", fontWeight: nilai===k.id?650:400}}>
+          <span style={{fontSize:17}}>{k.ikon}</span>{k.nama}
+        </button>
+      ))}
+    </div>
+  );
+}
+/* ================= BERANDA ================= */
+function Beranda({db, aksi, keTab, pesan}){
+  const mk = bulanIni(), tgl = new Date().getDate(), total = jmlHari(mk), sisaHari = Math.max(1,total-tgl+1);
+  const R = ringkasBulan(db,mk), rencana = rencanaBulan(db,mk), pakai = pakaiPos(db,mk);
+  const saldo = saldoTotal(db);
+  const belum = belumBayar(db,mk);
+  const jatahBelanja = db.pos.filter(p=>!POS_SIMPAN.includes(p.id)).reduce((s,p)=>s+(rencana.pos[p.id]||0),0);
+  /* aman per hari: jatah belanja dikurangi yang sudah dipakai dan tagihan yang belum dibayar */
+  const amanHarian = Math.max(0, (jatahBelanja - R.belanja - belum) / sisaHari);
+
+  const deret = useMemo(()=>{
+    const out=[];
+    for(let i=13;i>=0;i--){
+      const d=new Date(); d.setDate(d.getDate()-i);
+      const t=iso(d);
+      out.push(db.transaksi.filter(x=>x.tanggal===t&&x.jenis==="keluar"&&!POS_SIMPAN.includes(kat(x.kategori).pos))
+        .reduce((s,x)=>s+x.nominal,0));
+    }
+    return out;
+  },[db.transaksi]);
+
+  const lalu = belanjaSampaiTgl(db, geserBulan(mk,-1), tgl);
+  const beda = lalu>0 ? Math.round((R.belanja-lalu)/lalu*100) : null;
+  const proyeksi = tgl>=3 ? Math.round(R.belanja/tgl*total) : null;
+  const warn = peringatan(db);
+  const akun = pemakaianMetode(db, mk);
+  const totalAkun = akun.reduce((s,a)=>s+a.keluar,0);
+
+  const dataPos = db.pos.map(p=>({label:p.nama, nilai:rencana.pos[p.id]||0, warna:p.warna})).filter(d=>d.nilai>0);
+
+  return (
+    <div className="blok">
+      {/* Kartu utama — kondisi keuangan dalam 5 detik */}
+      <div className="puncak">
+        <div className="antara" style={{alignItems:"flex-start"}}>
+          <div>
+            <div className="samar">Total saldo</div>
+            <div className="num" style={{fontSize:30,fontWeight:700,letterSpacing:"-.02em",marginTop:2}}>{rp(saldo)}</div>
+          </div>
+          <span className="samar" style={{background:"rgba(255,255,255,.15)",padding:"5px 11px",borderRadius:999}}>
+            {BULAN[+mk.slice(5,7)-1]}
+          </span>
+        </div>
+
+        <div style={{margin:"10px -2px 0"}}><Mungil nilai={deret}/></div>
+        <div className="samar" style={{marginTop:-2}}>Belanja 14 hari terakhir</div>
+
+        <div className="grid2" style={{marginTop:12,borderTop:"1px solid rgba(255,255,255,.2)",paddingTop:11}}>
+          <div>
+            <div className="samar">↑ Masuk bulan ini</div>
+            <div className="num" style={{fontSize:16,fontWeight:650}}>{rp(R.masuk)}</div>
+          </div>
+          <div>
+            <div className="samar">↓ Belanja bulan ini</div>
+            <div className="num" style={{fontSize:16,fontWeight:650}}>{rp(R.belanja)}</div>
+          </div>
+        </div>
+
+        <div className="kotakputih" style={{marginTop:10}}>
+          <div className="antara">
+            <div>
+              <div className="samar">Aman dipakai per hari · {sisaHari} hari tersisa</div>
+              <div className="num" style={{fontSize:19,fontWeight:700}}>{rp(amanHarian)}</div>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <div className="samar">Disisihkan</div>
+              <div className="num" style={{fontSize:15,fontWeight:650}}>{rpk(R.disisihkan)}</div>
+            </div>
+          </div>
+          {belum>0 && <div className="samar" style={{marginTop:6}}>Sudah dipotong tagihan belum dibayar {rp(belum)}</div>}
+        </div>
+      </div>
+
+      {/* Peringatan */}
+      {warn.length>0 && (
+        <Kartu judul={`Peringatan (${warn.length})`}>
+          <div style={{display:"grid",gap:8}}>
+            {warn.slice(0,5).map(p=>(
+              <div key={p.id} className={"peringatan p-"+p.level}>
+                <span style={{fontSize:15,lineHeight:1.2}}>{p.level==="bahaya"?"🚨":p.level==="waspada"?"⚠️":"💡"}</span>
+                <div className="isi">
+                  <div style={{fontWeight:650,fontSize:13}}>{p.judul}</div>
+                  <div style={{color:"var(--redup)",marginTop:2}}>{p.pesan}</div>
+                  <div className="baris" style={{marginTop:7,gap:8}}>
+                    <button className="tbl" style={{padding:"7px 11px",minHeight:34}}
+                      onClick={()=> p.aksiTambah ? aksi.bukaForm({}) : keTab(p.tab||"laporan")}>{p.aksi}</button>
+                    <button className="samar" onClick={()=>aksi.tutupPeringatan(p.id)}>Tutup hari ini</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {warn.length>5 && <div className="samar">+{warn.length-5} peringatan lain</div>}
+          </div>
+        </Kartu>
+      )}
+
+      {/* Catat kilat */}
+      <Kartu judul="Catat kilat" aksi={<span className="samar">sekali ketuk</span>}>
+        {db.pintasan.length===0
+          ? <div className="samar">Belum ada pintasan. Saat menambah transaksi, centang “jadikan pintasan”.</div>
+          : <div className="pils">
+              {db.pintasan.map(p=>(
+                <span key={p.id} className="chip">
+                  <button onClick={()=>aksi.catatKilat(p)} className="baris" style={{gap:6}}>
+                    <span>{kat(p.kategori).ikon}</span>
+                    <span>{p.catatan||kat(p.kategori).nama}</span>
+                    <b className="num">{rpk(p.nominal)}</b>
+                  </button>
+                  <button onClick={()=>aksi.hapusPintasan(p.id)} style={{color:"var(--samar)",paddingLeft:2}}>✕</button>
+                </span>
+              ))}
+            </div>}
+      </Kartu>
+
+      {/* Pembagian bulan ini */}
+      <Kartu judul={`Pembagian ${rp(rencana.pemasukan)} bulan ini`}
+        aksi={<button className="samar" onClick={()=>keTab("alokasi")}>Atur ›</button>}>
+        {rencana.pemasukan>0 ? (
+          <>
+            <BatangTumpuk data={dataPos}/>
+            <div style={{display:"grid",gap:9,marginTop:12}}>
+              {db.pos.map(p=>{
+                const jatah = rencana.pos[p.id]||0; if(!jatah) return null;
+                const kepakai = pakai[p.id]||0, pct = jatah? kepakai/jatah*100 : 0;
+                return (
+                  <div key={p.id}>
+                    <div className="antara" style={{fontSize:12.5}}>
+                      <span>{p.ikon} {p.nama}</span>
+                      <span className="num" style={{color: pct>=100?"var(--merah)":pct>=80?"var(--kuning)":"var(--redup)"}}>
+                        {rpk(kepakai)} / {rpk(jatah)}
+                      </span>
+                    </div>
+                    <div style={{marginTop:4}}><Bar persen={pct}/></div>
+                    <div className="samar" style={{marginTop:3}}>
+                      {kepakai<=jatah ? `Sisa ${rp(jatah-kepakai)}` : `Lewat ${rp(kepakai-jatah)}`} · {Math.round(pct)}%
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        ) : <Kosong ikon="🧭" teks="Belum ada rencana pembagian bulan ini."
+              aksi={<button className="tbl tbl-utama" onClick={()=>keTab("alokasi")}>Buat pembagian</button>}/>}
+      </Kartu>
+
+      {/* Ringkas vs bulan lalu */}
+      <Kartu judul={`Rekap ${namaBulan(mk)}`} aksi={<button className="samar" onClick={()=>keTab("laporan")}>Laporan ›</button>}>
+        <div className="grid3">
+          <div><div className="samar">Masuk</div><div className="num naik" style={{fontWeight:650}}>{rpk(R.masuk)}</div></div>
+          <div><div className="samar">Belanja</div><div className="num turun" style={{fontWeight:650}}>{rpk(R.belanja)}</div></div>
+          <div><div className="samar">Disisihkan</div><div className="num" style={{fontWeight:650}}>{rpk(R.disisihkan)}</div></div>
+        </div>
+        {beda!==null && (
+          <div className="peringatan p-info" style={{marginTop:11}}>
+            <span>📊</span>
+            <div>Dibanding periode sama bulan lalu (tanggal 1–{tgl}): belanja {beda>=0?"naik":"turun"} <b>{Math.abs(beda)}%</b> — {rp(R.belanja)} vs {rp(lalu)}.</div>
+          </div>
+        )}
+        {proyeksi!==null && (
+          <div className="samar" style={{marginTop:8}}>Kalau laju ini bertahan, belanja akhir bulan sekitar <b className="num">{rp(proyeksi)}</b>.</div>
+        )}
+      </Kartu>
+
+      {/* Saldo per akun */}
+      {akun.length>0 && (
+        <Kartu judul="Bayar pakai apa bulan ini">
+          <div style={{display:"grid",gap:9}}>
+            {akun.map(a=>(
+              <div key={a.id}>
+                <div className="antara" style={{fontSize:12.5}}>
+                  <span>{a.ikon} {a.nama} <span className="samar">{a.n}×</span></span>
+                  <span className="num">{rp(a.keluar)}</span>
+                </div>
+                <div style={{marginTop:4}}><Bar persen={a.keluar/(totalAkun||1)*100} warna="var(--hijau2)"/></div>
+              </div>
+            ))}
+          </div>
+        </Kartu>
+      )}
+
+      {/* Transaksi terakhir */}
+      <Kartu judul="Transaksi terakhir" aksi={<button className="samar" onClick={()=>keTab("riwayat")}>Semua ›</button>}>
+        {db.transaksi.length===0
+          ? <Kosong ikon="🧾" teks="Belum ada catatan. Mulai dari pengeluaran hari ini."
+              aksi={<button className="tbl tbl-utama" onClick={()=>aksi.bukaForm({})}>Catat transaksi</button>}/>
+          : db.transaksi.slice(0,6).map(t=> <BarisTx key={t.id} t={t} klik={()=>aksi.bukaForm(t)}/>)}
+      </Kartu>
+
+      <div className="samar" style={{textAlign:"center",paddingBottom:8}}>
+        {db.transaksi.length} transaksi tercatat · perubahan {pesan} otomatis
+      </div>
+    </div>
+  );
+}
+
+/* ================= FORM TRANSAKSI ================= */
+function FormTransaksi({tx, tutup, simpanTx, hapusTx, simpanPintasan, metodeTerakhir}){
+  const buka = !!tx;
+  const [jenis,setJenis]       = useState("keluar");
+  const [nominal,setNominal]   = useState("");
+  const [kategori,setKategori] = useState("makanan");
+  const [tanggal,setTanggal]   = useState(hariIni());
+  const [catatan,setCatatan]   = useState("");
+  const [metode,setMetode]     = useState("ewallet");
+  const [tujuan,setTujuan]     = useState("bank");
+  const [pintas,setPintas]     = useState(false);
+  const [galat,setGalat]       = useState("");
+
+  useEffect(()=>{
+    if(!tx) return;
+    const j = tx.jenis || "keluar";
+    setJenis(j);
+    setNominal(tx.nominal? nf.format(tx.nominal) : "");
+    setKategori(tx.kategori || (j==="masuk"?"gaji":"makanan"));
+    setTanggal(tx.tanggal || hariIni());
+    setCatatan(tx.catatan || "");
+    setMetode(tx.metode || metodeTerakhir[j==="masuk"?"masuk":"keluar"] || "ewallet");
+    setTujuan(tx.metodeTujuan || "bank");
+    setPintas(false); setGalat("");
+  },[tx]);
+
+  const gantiJenis = j => {
+    setJenis(j);
+    if(j==="masuk" && !KAT_MASUK.some(k=>k.id===kategori)) setKategori("gaji");
+    if(j==="keluar" && !KAT_KELUAR.some(k=>k.id===kategori)) setKategori("makanan");
+    if(j!=="pindah") setMetode(metodeTerakhir[j]||metode);
+  };
+
+  const geserTgl = n => { const d=new Date(); d.setDate(d.getDate()+n); setTanggal(iso(d)); };
+
+  const kirim = () => {
+    const n = angka(nominal);
+    if(n<=0) return setGalat("Isi nominal lebih dari 0.");
+    if(jenis==="pindah" && metode===tujuan) return setGalat("Akun asal dan tujuan tidak boleh sama.");
+    const data = {
+      id: tx.id || uid(), jenis, nominal:n, tanggal,
+      kategori: jenis==="pindah" ? "lainnya" : kategori,
+      catatan: catatan.trim(), metode,
+      metodeTujuan: jenis==="pindah" ? tujuan : undefined,
+      dibuat: tx.dibuat || Date.now(), diubah: Date.now(),
+    };
+    simpanTx(data);
+    if(pintas && jenis!=="pindah") simpanPintasan({id:uid(), jenis, kategori, nominal:n, catatan:catatan.trim(), metode});
+    tutup();
+  };
+
+  const jenisWarna = {keluar:"var(--merah)", masuk:"var(--hijau)", pindah:"var(--biru)"};
+
+  return (
+    <Lembar buka={buka} tutup={tutup} judul={tx&&tx.id ? "Ubah transaksi" : "Catat transaksi"}>
+      <div style={{display:"grid",gap:14}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:4,background:"var(--lembut)",padding:4,borderRadius:13}}>
+          {[["keluar","Pengeluaran"],["masuk","Pemasukan"],["pindah","Pindah Dana"]].map(([id,l])=>(
+            <button key={id} onClick={()=>gantiJenis(id)}
+              style={{padding:"9px 2px",borderRadius:10,fontSize:12.5,fontWeight:600,minHeight:40,
+                background: jenis===id? jenisWarna[id] : "transparent",
+                color: jenis===id? "#fff" : "var(--redup)"}}>{l}</button>
+          ))}
+        </div>
+
+        {jenis==="pindah" && (
+          <div className="peringatan p-info"><span>🔄</span>
+            <div>Pindah dana antar akun sendiri. Tidak dihitung sebagai pemasukan maupun pengeluaran, jadi laporan tetap jujur.</div>
+          </div>
+        )}
+
+        <InputNominal nilai={nominal} set={setNominal} fokus/>
+
+        {jenis!=="pindah" && (
+          <Bidang label="Kategori"><PilihKategori jenis={jenis} nilai={kategori} set={setKategori}/></Bidang>
+        )}
+
+        <div className="grid2">
+          <Bidang label="Tanggal">
+            <input type="date" value={tanggal} onChange={e=>setTanggal(e.target.value)}/>
+            <div className="pils" style={{marginTop:6}}>
+              <button className={"pil"+(tanggal===hariIni()?" aktif":"")} onClick={()=>geserTgl(0)}>Hari ini</button>
+              <button className="pil" onClick={()=>geserTgl(-1)}>Kemarin</button>
+            </div>
+          </Bidang>
+          <Bidang label={jenis==="pindah"?"Dari akun":"Metode"}>
+            <select value={metode} onChange={e=>setMetode(e.target.value)}>
+              {METODE.map(m=><option key={m.id} value={m.id}>{m.ikon} {m.nama}</option>)}
+            </select>
+            {jenis==="pindah" && (
+              <div style={{marginTop:6}}>
+                <span className="label">Ke akun</span>
+                <select value={tujuan} onChange={e=>setTujuan(e.target.value)}>
+                  {METODE.map(m=><option key={m.id} value={m.id}>{m.ikon} {m.nama}</option>)}
+                </select>
+              </div>
+            )}
+          </Bidang>
+        </div>
+
+        <Bidang label="Untuk apa" petunjuk="Tulis sejelas mungkin, nanti kebaca di laporan.">
+          <input value={catatan} onChange={e=>setCatatan(e.target.value)} placeholder="Contoh: makan siang di warteg depan kantor"/>
+        </Bidang>
+
+        {jenis!=="pindah" && (
+          <label className="baris" style={{gap:9,background:"var(--lembut)",padding:"10px 12px",borderRadius:12,cursor:"pointer"}}>
+            <input type="checkbox" checked={pintas} onChange={e=>setPintas(e.target.checked)}
+              style={{width:18,height:18,padding:0,flex:"0 0 18px",accentColor:"#047857"}}/>
+            <span style={{fontSize:12.5}}>Jadikan pintasan catat kilat
+              <span className="samar" style={{display:"block"}}>Muncul di beranda, sekali ketuk langsung tercatat</span></span>
+          </label>
+        )}
+
+        {galat && <div style={{color:"var(--merah)",fontSize:12.5}}>{galat}</div>}
+
+        <div className="baris" style={{gap:8}}>
+          {tx && tx.id && (
+            <button className="tbl" style={{color:"var(--merah)"}} onClick={()=>{hapusTx(tx.id); tutup();}}>🗑 Hapus</button>
+          )}
+          <button className="tbl tbl-utama tbl-penuh" onClick={kirim}>Simpan</button>
+        </div>
+      </div>
+    </Lembar>
+  );
+}
+
+/* ================= ALOKASI ================= */
+function Alokasi({db, aksi}){
+  const [mk,setMk] = useState(bulanIni());
+  const rencana = rencanaBulan(db,mk);
+  const pakai = pakaiPos(db,mk);
+  const R = ringkasBulan(db,mk);
+  const [pemasukan,setPemasukan] = useState(nf.format(rencana.pemasukan||0));
+  const [nilai,setNilai] = useState({...rencana.pos});
+
+  useEffect(()=>{
+    const r = rencanaBulan(db,mk);
+    setPemasukan(nf.format(r.pemasukan||0));
+    setNilai({...r.pos});
+  },[mk, db.rencana]);
+
+  const dasar = angka(pemasukan);
+  const totalBagi = db.pos.reduce((s,p)=>s+(nilai[p.id]||0),0);
+  const selisih = dasar - totalBagi;
+  const berubah = JSON.stringify(nilai)!==JSON.stringify(rencana.pos) || dasar!==rencana.pemasukan;
+
+  const pakaiTemplat = t => {
+    const baru = {};
+    db.pos.forEach(p=> baru[p.id] = Math.round(dasar*(t.bagi[p.id]??0)/100));
+    setNilai(baru);
+  };
+  const samakan = () => {
+    const baru = {};
+    db.pos.forEach(p=> baru[p.id] = Math.round(dasar*p.persen/100));
+    setNilai(baru);
+  };
+
+  const dataDonat = db.pos.map(p=>({label:p.nama, nilai:nilai[p.id]||0, warna:p.warna})).filter(d=>d.nilai>0);
+  const dataBanding = db.pos.map(p=>({label:p.nama, warna:p.warna, rencana:nilai[p.id]||0, nyata:pakai[p.id]||0}));
+  const maksBanding = Math.max(1, ...dataBanding.flatMap(d=>[d.rencana,d.nyata]));
+
+  return (
+    <div className="blok">
+      <Kartu>
+        <div className="antara">
+          <button className="tbl" onClick={()=>setMk(geserBulan(mk,-1))}>‹</button>
+          <div style={{textAlign:"center"}}>
+            <div className="judul">{namaBulan(mk)}</div>
+            <div className="samar">Rencana pembagian</div>
+          </div>
+          <button className="tbl" onClick={()=>setMk(geserBulan(mk,1))} disabled={mk>=bulanIni()}
+            style={{opacity: mk>=bulanIni()?.4:1}}>›</button>
+        </div>
+      </Kartu>
+
+      <Kartu judul="Uang yang dibagi">
+        <InputNominal nilai={pemasukan} set={setPemasukan}/>
+        <div className="samar" style={{marginTop:6}}>
+          Pemasukan nyata bulan ini {rp(R.masuk)}.
+          {R.masuk>0 && R.masuk!==dasar && (
+            <button className="naik" style={{marginLeft:6,textDecoration:"underline"}}
+              onClick={()=>setPemasukan(nf.format(R.masuk))}>pakai angka ini</button>
+          )}
+        </div>
+        <div className="pils" style={{marginTop:10}}>
+          {TEMPLAT.map(t=>(
+            <button key={t.nama} className="pil" onClick={()=>pakaiTemplat(t)} title={t.ket}>{t.nama}</button>
+          ))}
+          <button className="pil" onClick={samakan}>Pakai persen pos</button>
+        </div>
+      </Kartu>
+
+      <Kartu judul="Dibagi ke mana">
+        <div style={{display:"grid",gap:12}}>
+          {db.pos.map(p=>{
+            const n = nilai[p.id]||0;
+            const pct = dasar? n/dasar*100 : 0;
+            return (
+              <div key={p.id}>
+                <div className="antara" style={{marginBottom:5}}>
+                  <span className="baris" style={{gap:7,fontSize:13.5,fontWeight:550}}>
+                    <i style={{width:10,height:10,borderRadius:3,background:p.warna,display:"block"}}/>
+                    {p.ikon} {p.nama}
+                  </span>
+                  <span className="samar num">{Math.round(pct)}%</span>
+                </div>
+                <div className="baris" style={{gap:8}}>
+                  <input inputMode="numeric" value={n? nf.format(n):""} placeholder="0"
+                    onChange={e=>setNilai({...nilai, [p.id]:angka(e.target.value)})}
+                    className="num" style={{fontSize:14}}/>
+                  <button className="pil" onClick={()=>setNilai({...nilai,[p.id]:Math.round(dasar*p.persen/100)})}>
+                    {p.persen}%
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className={"peringatan "+(Math.abs(selisih)<1000?"p-info":selisih<0?"p-bahaya":"p-waspada")} style={{marginTop:14}}>
+          <span>{Math.abs(selisih)<1000?"✅":selisih<0?"🚨":"⚠️"}</span>
+          <div>
+            {Math.abs(selisih)<1000
+              ? <>Pas. Semua {rp(dasar)} sudah ada tempatnya.</>
+              : selisih<0
+                ? <>Pembagian lebih {rp(-selisih)} dari uang yang ada. Kurangi dulu, kalau tidak pasti jebol.</>
+                : <>Masih ada {rp(selisih)} yang belum ditentukan. Uang tanpa tujuan paling gampang habis — masukkan ke Tabungan atau Dana Darurat.</>}
+          </div>
+        </div>
+
+        {berubah && (
+          <button className="tbl tbl-utama tbl-penuh" style={{marginTop:12}}
+            onClick={()=>aksi.simpanRencana(mk,{pemasukan:dasar, pos:nilai})}>Simpan pembagian</button>
+        )}
+      </Kartu>
+
+      {dataDonat.length>0 && (
+        <Kartu judul="Bagan pembagian">
+          <BatangTumpuk data={dataDonat} tinggi={30}/>
+          <div style={{display:"flex",flexWrap:"wrap",gap:16,marginTop:16,alignItems:"center",justifyContent:"center"}}>
+            <Donat data={dataDonat} tengah={rpk(dasar)} bawah="dibagi"/>
+            <div style={{flex:"1 1 220px",display:"grid",gap:7}}>
+              {dataDonat.map(d=>(
+                <div key={d.label} className="baris" style={{fontSize:12.5}}>
+                  <i style={{width:10,height:10,borderRadius:3,background:d.warna,display:"block"}}/>
+                  <span className="isi potong">{d.label}</span>
+                  <span className="samar">{Math.round(d.nilai/(dasar||1)*100)}%</span>
+                  <span className="num" style={{width:92,textAlign:"right"}}>{rp(d.nilai)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Kartu>
+      )}
+
+      <Kartu judul="Rencana vs kenyataan">
+        <div style={{display:"grid",gap:13}}>
+          {dataBanding.map(d=>(
+            <div key={d.label}>
+              <div className="antara" style={{fontSize:12.5,marginBottom:5}}>
+                <span>{d.label}</span>
+                <span className="num samar">{rpk(d.nyata)} dari {rpk(d.rencana)}</span>
+              </div>
+              <div style={{display:"grid",gap:3}}>
+                <div style={{height:9,background:"var(--lembut)",borderRadius:999,overflow:"hidden"}}>
+                  <i style={{display:"block",height:"100%",width:(d.rencana/maksBanding*100)+"%",background:d.warna,opacity:.35,borderRadius:999}}/>
+                </div>
+                <div style={{height:9,background:"var(--lembut)",borderRadius:999,overflow:"hidden"}}>
+                  <i style={{display:"block",height:"100%",width:(d.nyata/maksBanding*100)+"%",
+                    background: d.nyata>d.rencana?"var(--merah)":d.warna, borderRadius:999}}/>
+                </div>
+              </div>
+              <div className="samar" style={{marginTop:3}}>
+                {d.nyata<=d.rencana ? `Sisa ${rp(d.rencana-d.nyata)}` : `Lewat ${rp(d.nyata-d.rencana)}`}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="samar" style={{marginTop:10}}>Batang atas yang pudar = rencana. Batang bawah = yang benar-benar terpakai.</div>
+      </Kartu>
+    </div>
+  );
+}
+
+/* ================= RIWAYAT ================= */
+function Riwayat({db, aksi}){
+  const [cari,setCari]       = useState("");
+  const [periode,setPeriode] = useState("bulan");
+  const [jenis,setJenis]     = useState("semua");
+  const [kategori,setKat]    = useState("semua");
+  const [metode,setMetode]   = useState("semua");
+  const [dari,setDari]       = useState("");
+  const [sampai,setSampai]   = useState("");
+
+  const hasil = useMemo(()=>{
+    const skrg = new Date();
+    const awalMinggu = new Date(skrg); awalMinggu.setDate(skrg.getDate()-skrg.getDay());
+    return db.transaksi.filter(t=>{
+      if(periode==="hari"   && t.tanggal!==hariIni()) return false;
+      if(periode==="minggu" && t.tanggal<iso(awalMinggu)) return false;
+      if(periode==="bulan"  && kunciBulan(t.tanggal)!==bulanIni()) return false;
+      if(periode==="pilih"){
+        if(dari && t.tanggal<dari) return false;
+        if(sampai && t.tanggal>sampai) return false;
+      }
+      if(jenis!=="semua" && t.jenis!==jenis) return false;
+      if(kategori!=="semua" && t.kategori!==kategori) return false;
+      if(metode!=="semua" && t.metode!==metode && t.metodeTujuan!==metode) return false;
+      if(cari){
+        const s = cari.toLowerCase();
+        const angkaCari = s.replace(/\D/g,"");
+        const cocok = (t.catatan||"").toLowerCase().includes(s)
+          || kat(t.kategori).nama.toLowerCase().includes(s)
+          || (angkaCari && String(t.nominal).includes(angkaCari));
+        if(!cocok) return false;
+      }
+      return true;
+    });
+  },[db.transaksi,cari,periode,jenis,kategori,metode,dari,sampai]);
+
+  const masuk = hasil.filter(t=>t.jenis==="masuk").reduce((s,t)=>s+t.nominal,0);
+  const keluar = hasil.filter(t=>t.jenis==="keluar").reduce((s,t)=>s+t.nominal,0);
+
+  const grup = useMemo(()=>{
+    const g = {};
+    hasil.forEach(t=> (g[t.tanggal]=g[t.tanggal]||[]).push(t));
+    return Object.entries(g).sort((a,b)=> a[0]<b[0]?1:-1);
+  },[hasil]);
+
+  return (
+    <div className="blok">
+      <input value={cari} onChange={e=>setCari(e.target.value)} placeholder="🔍 Cari catatan, kategori, atau nominal"/>
+
+      <div className="pils">
+        {[["hari","Hari ini"],["minggu","Minggu ini"],["bulan","Bulan ini"],["semua","Semua"],["pilih","Pilih tanggal"]].map(([id,l])=>(
+          <button key={id} className={"pil"+(periode===id?" aktif":"")} onClick={()=>setPeriode(id)}>{l}</button>
+        ))}
+      </div>
+
+      {periode==="pilih" && (
+        <div className="grid2">
+          <Bidang label="Dari"><input type="date" value={dari} onChange={e=>setDari(e.target.value)}/></Bidang>
+          <Bidang label="Sampai"><input type="date" value={sampai} onChange={e=>setSampai(e.target.value)}/></Bidang>
+        </div>
+      )}
+
+      <div className="grid3">
+        <select value={jenis} onChange={e=>setJenis(e.target.value)} style={{fontSize:12.5,padding:"9px 8px"}}>
+          <option value="semua">Semua jenis</option>
+          <option value="keluar">Pengeluaran</option>
+          <option value="masuk">Pemasukan</option>
+          <option value="pindah">Pindah dana</option>
+        </select>
+        <select value={kategori} onChange={e=>setKat(e.target.value)} style={{fontSize:12.5,padding:"9px 8px"}}>
+          <option value="semua">Semua kategori</option>
+          {SEMUA_KAT.map(k=><option key={k.id+k.nama} value={k.id}>{k.nama}</option>)}
+        </select>
+        <select value={metode} onChange={e=>setMetode(e.target.value)} style={{fontSize:12.5,padding:"9px 8px"}}>
+          <option value="semua">Semua metode</option>
+          {METODE.map(m=><option key={m.id} value={m.id}>{m.nama}</option>)}
+        </select>
+      </div>
+
+      <div className="grid3">
+        <Kartu pad={12}><div className="samar">Masuk</div><div className="num naik" style={{fontWeight:650}}>{rpk(masuk)}</div></Kartu>
+        <Kartu pad={12}><div className="samar">Keluar</div><div className="num turun" style={{fontWeight:650}}>{rpk(keluar)}</div></Kartu>
+        <Kartu pad={12}><div className="samar">Selisih</div><div className="num" style={{fontWeight:650}}>{rpk(masuk-keluar)}</div></Kartu>
+      </div>
+
+      {grup.length===0
+        ? <Kosong ikon="🔍" teks="Tidak ada transaksi yang cocok dengan saringan ini."
+            aksi={<button className="tbl tbl-utama" onClick={()=>aksi.bukaForm({})}>Catat transaksi</button>}/>
+        : grup.map(([tanggal,list])=>{
+            const net = list.reduce((s,t)=> s+(t.jenis==="masuk"?t.nominal: t.jenis==="keluar"?-t.nominal:0),0);
+            return (
+              <Kartu key={tanggal} pad={14}>
+                <div className="antara" style={{marginBottom:4}}>
+                  <span style={{fontSize:12.5,fontWeight:650}}>{labelHari(tanggal)}</span>
+                  <span className="num samar">{net>=0?"+":"−"}{nf.format(Math.abs(net))}</span>
+                </div>
+                {list.map(t=>(
+                  <div key={t.id} className="baris" style={{gap:2}}>
+                    <div className="isi"><BarisTx t={t} tampilPos klik={()=>aksi.bukaForm(t)}/></div>
+                    <button onClick={()=>aksi.hapusTx(t.id)} aria-label="Hapus"
+                      style={{color:"var(--samar)",padding:"10px 6px"}}>🗑</button>
+                  </div>
+                ))}
+              </Kartu>
+            );
+          })}
+    </div>
+  );
+}
+
+/* ================= LAPORAN ================= */
+function Laporan({db, aksi}){
+  const tahunKini = +hariIni().slice(0,4);
+  const mk = bulanIni();
+  const [lingkup,setLingkup] = useState("bulan");
+  const [tahun,setTahun] = useState(tahunKini);
+  const [buka,setBuka] = useState({});
+
+  const daftarTahun = useMemo(()=>{
+    const s = new Set(db.transaksi.map(t=>+t.tanggal.slice(0,4))); s.add(tahunKini);
+    return [...s].sort((a,b)=>b-a);
+  },[db.transaksi]);
+
+  const dalam = t => lingkup==="bulan" ? kunciBulan(t.tanggal)===mk
+                 : lingkup==="tahun" ? t.tanggal.slice(0,4)===String(tahun) : true;
+  const list = useMemo(()=>db.transaksi.filter(dalam),[db.transaksi,lingkup,tahun]);
+  const judulLingkup = lingkup==="bulan"? namaBulan(mk) : lingkup==="tahun"? "Tahun "+tahun : "Sejak awal mencatat";
+
+  const masuk = list.filter(t=>t.jenis==="masuk").reduce((s,t)=>s+t.nominal,0);
+  const disisihkan = list.filter(t=>t.jenis==="keluar"&&POS_SIMPAN.includes(kat(t.kategori).pos)).reduce((s,t)=>s+t.nominal,0);
+  const belanja = list.filter(t=>t.jenis==="keluar"&&!POS_SIMPAN.includes(kat(t.kategori).pos)).reduce((s,t)=>s+t.nominal,0);
+  const rasio = masuk>0 ? Math.round((disisihkan+(masuk-belanja-disisihkan))/masuk*100) : 0;
+
+  const hariAktif = new Set(list.filter(t=>t.jenis==="keluar").map(t=>t.tanggal));
+  const bulanAktif = new Set(list.map(t=>kunciBulan(t.tanggal))).size || 1;
+  const hariKalender = lingkup==="bulan" ? new Date().getDate() : bulanAktif*30;
+  const perHari = list.filter(t=>t.jenis==="keluar"&&!POS_SIMPAN.includes(kat(t.kategori).pos))
+    .reduce((m,t)=>{ m[t.tanggal]=(m[t.tanggal]||0)+t.nominal; return m; },{});
+  const nilaiHarian = Object.values(perHari).sort((a,b)=>a-b);
+  const median = nilaiHarian.length ? nilaiHarian[Math.floor(nilaiHarian.length/2)] : 0;
+  const hariBoros = Object.entries(perHari).sort((a,b)=>b[1]-a[1])[0];
+
+  /* pohon: pos → kategori → transaksi terbesar */
+  const pohon = useMemo(()=>{
+    const posMap = {};
+    list.filter(t=>t.jenis==="keluar").forEach(t=>{
+      const k = kat(t.kategori), p = k.pos||"keinginan";
+      posMap[p] = posMap[p] || {total:0, kat:{}};
+      posMap[p].total += t.nominal;
+      const c = posMap[p].kat[k.id] = posMap[p].kat[k.id] || {total:0, n:0, tx:[]};
+      c.total += t.nominal; c.n++; c.tx.push(t);
+    });
+    return db.pos.map(p=>({
+      ...p,
+      total: posMap[p.id]?.total || 0,
+      kategori: Object.entries(posMap[p.id]?.kat||{})
+        .map(([id,v])=>({...kat(id), ...v, tx:v.tx.sort((a,b)=>b.nominal-a.nominal).slice(0,3)}))
+        .sort((a,b)=>b.total-a.total)
+    })).filter(p=>p.total>0).sort((a,b)=>b.total-a.total);
+  },[list,db.pos]);
+  const totalKeluar = pohon.reduce((s,p)=>s+p.total,0);
+
+  const perKategori = useMemo(()=>{
+    const m = {};
+    list.filter(t=>t.jenis==="keluar").forEach(t=>{ m[t.kategori]=m[t.kategori]||{total:0,n:0}; m[t.kategori].total+=t.nominal; m[t.kategori].n++; });
+    const lalu = {};
+    if(lingkup==="bulan"){
+      db.transaksi.filter(t=>kunciBulan(t.tanggal)===geserBulan(mk,-1)&&t.jenis==="keluar")
+        .forEach(t=> lalu[t.kategori]=(lalu[t.kategori]||0)+t.nominal);
+    }
+    return Object.entries(m).map(([id,v])=>({
+      ...kat(id), ...v, rata:v.total/v.n,
+      beda: lalu[id]? Math.round((v.total-lalu[id])/lalu[id]*100) : null
+    })).sort((a,b)=>b.total-a.total);
+  },[list,lingkup,mk,db.transaksi]);
+
+  const terbesar = useMemo(()=> list.filter(t=>t.jenis==="keluar").sort((a,b)=>b.nominal-a.nominal).slice(0,5),[list]);
+
+  const rekapBulan = useMemo(()=>{
+    const out=[];
+    for(let m=0;m<12;m++){
+      const k = `${tahun}-${String(m+1).padStart(2,"0")}`;
+      const l = db.transaksi.filter(t=>kunciBulan(t.tanggal)===k);
+      const i = l.filter(t=>t.jenis==="masuk").reduce((s,t)=>s+t.nominal,0);
+      const o = l.filter(t=>t.jenis==="keluar").reduce((s,t)=>s+t.nominal,0);
+      out.push({k, label:BLN[m], penuh:BULAN[m], masuk:i, keluar:o, selisih:i-o, n:l.length});
+    }
+    return out;
+  },[db.transaksi,tahun]);
+  const totalTahun = rekapBulan.reduce((a,r)=>({masuk:a.masuk+r.masuk, keluar:a.keluar+r.keluar, n:a.n+r.n}),{masuk:0,keluar:0,n:0});
+
+  const rekapTahun = useMemo(()=>{
+    const m={};
+    db.transaksi.forEach(t=>{
+      const y=t.tanggal.slice(0,4); m[y]=m[y]||{masuk:0,keluar:0,n:0};
+      if(t.jenis==="masuk") m[y].masuk+=t.nominal; else if(t.jenis==="keluar") m[y].keluar+=t.nominal;
+      m[y].n++;
+    });
+    return Object.entries(m).sort((a,b)=> a[0]<b[0]?1:-1);
+  },[db.transaksi]);
+
+  const enamBulan = useMemo(()=>{
+    const out=[];
+    for(let i=5;i>=0;i--){
+      const k = geserBulan(mk,-i);
+      const l = db.transaksi.filter(t=>kunciBulan(t.tanggal)===k);
+      out.push({label:BLN[+k.slice(5,7)-1],
+        masuk:l.filter(t=>t.jenis==="masuk").reduce((s,t)=>s+t.nominal,0),
+        keluar:l.filter(t=>t.jenis==="keluar").reduce((s,t)=>s+t.nominal,0)});
+    }
+    return out;
+  },[db.transaksi,mk]);
+
+  const saldoJalan = useMemo(()=>{
+    const m={};
+    db.transaksi.forEach(t=>{
+      const k=kunciBulan(t.tanggal);
+      m[k]=(m[k]||0)+(t.jenis==="masuk"?t.nominal: t.jenis==="keluar"?-t.nominal:0);
+    });
+    let jalan=0;
+    return Object.keys(m).sort().map(k=>{ jalan+=m[k]; return {label:BLN[+k.slice(5,7)-1]+" "+k.slice(2,4), nilai:jalan}; });
+  },[db.transaksi]);
+
+  const perMetode = useMemo(()=>{
+    const m={};
+    list.forEach(t=>{ m[t.metode]=m[t.metode]||{keluar:0,n:0}; if(t.jenis==="keluar") m[t.metode].keluar+=t.nominal; m[t.metode].n++; });
+    return Object.entries(m).map(([id,v])=>({...met(id),...v})).sort((a,b)=>b.keluar-a.keluar);
+  },[list]);
+
+  const insight = useMemo(()=>{
+    const o=[];
+    const lalu = belanjaSampaiTgl(db, geserBulan(mk,-1), new Date().getDate());
+    const kini = belanjaSampaiTgl(db, mk, new Date().getDate());
+    if(lalu>0) o.push(`Sampai tanggal ${new Date().getDate()}, belanja lu ${kini>=lalu?"lebih besar":"lebih kecil"} ${Math.abs(Math.round((kini-lalu)/lalu*100))}% dibanding bulan lalu di tanggal yang sama (${rp(kini)} vs ${rp(lalu)}).`);
+    if(perKategori[0]) o.push(`Kategori terbesar: ${perKategori[0].nama} ${rp(perKategori[0].total)} — ${Math.round(perKategori[0].total/(totalKeluar||1)*100)}% dari seluruh pengeluaran.`);
+    if(median>0) o.push(`Hari biasa lu habis sekitar ${rp(median)}. Rata-ratanya ${rp(belanja/Math.max(1,hariAktif.size))}, selisihnya datang dari belanja besar sesekali.`);
+    if(hariBoros) o.push(`Hari paling boros: ${tglPanjang(hariBoros[0])} sebesar ${rp(hariBoros[1])}.`);
+    const kecil = list.filter(t=>t.jenis==="keluar"&&t.nominal<=30000).length;
+    if(kecil>=10) o.push(`Ada ${kecil} transaksi kecil di bawah Rp 30.000, totalnya ${rp(list.filter(t=>t.jenis==="keluar"&&t.nominal<=30000).reduce((s,t)=>s+t.nominal,0))}. Bocor halus biasanya di sini.`);
+    if(masuk>0) o.push(rasio>=20 ? `Rasio menabung ${rasio}% — di atas anjuran umum 20%.`
+      : `Rasio menabung ${rasio}%. Untuk sampai 20%, perlu menyisihkan ${rp(Math.max(0,masuk*0.2-(masuk-belanja)))} lagi.`);
+    return o;
+  },[list,perKategori,median,hariBoros,masuk,rasio,belanja]);
+
+  /* ekspor */
+  const unduh = (isi,nama,tipe)=>{
+    try{
+      const b=new Blob([isi],{type:tipe}), u=URL.createObjectURL(b);
+      const a=document.createElement("a"); a.href=u; a.download=nama; a.click();
+      setTimeout(()=>URL.revokeObjectURL(u),1000);
+      aksi.roti("Terunduh: "+nama);
+    }catch(e){ aksi.roti("Unduhan diblokir peramban."); }
+  };
+  const P = db.setelan.pemisahCsv || ";";
+  const csv = (baris,nama)=> unduh("﻿"+baris.map(r=>r.join(P)).join("\n"), nama, "text/csv;charset=utf-8");
+  const eksporTx = ()=>{
+    const b=[["Tanggal","Jenis","Kategori","Pos","Nominal","Metode","Untuk apa"]];
+    list.forEach(t=>b.push([t.tanggal, t.jenis==="masuk"?"Pemasukan":t.jenis==="pindah"?"Pindah":"Pengeluaran",
+      kat(t.kategori).nama, t.jenis==="keluar"?(kat(t.kategori).pos||""):"", t.nominal, met(t.metode).nama,
+      (t.catatan||"").replace(new RegExp("["+P+"\n]","g")," ")]));
+    csv(b, `transaksi-${lingkup==="tahun"?tahun:lingkup==="bulan"?mk:"semua"}.csv`);
+  };
+  const eksporRekap = ()=>{
+    const b=[["Bulan","Pemasukan","Pengeluaran","Selisih","Jumlah transaksi"]];
+    rekapBulan.forEach(r=>b.push([r.penuh,r.masuk,r.keluar,r.selisih,r.n]));
+    b.push(["TOTAL "+tahun,totalTahun.masuk,totalTahun.keluar,totalTahun.masuk-totalTahun.keluar,totalTahun.n]);
+    b.push([""]);
+    b.push(["Kategori","Total","Transaksi","Rata-rata","Persen"]);
+    perKategori.forEach(k=>b.push([k.nama,k.total,k.n,Math.round(k.rata),Math.round(k.total/(totalKeluar||1)*100)+"%"]));
+    csv(b,`rekap-${tahun}.csv`);
+  };
+  const salin = ()=>{
+    const teks = `Ringkasan ${judulLingkup}\nMasuk: ${rp(masuk)}\nBelanja: ${rp(belanja)}\nDisisihkan: ${rp(disisihkan)}\nSelisih: ${rp(masuk-belanja-disisihkan)}\n\n`
+      + perKategori.slice(0,8).map(k=>`${k.nama}: ${rp(k.total)}`).join("\n");
+    navigator.clipboard?.writeText(teks).then(()=>aksi.roti("Ringkasan disalin"), ()=>aksi.roti("Gagal menyalin"));
+  };
+
+  return (
+    <div className="blok">
+      <div className="pils">
+        {[["bulan","Bulan ini"],["tahun","Per tahun"],["semua","Seumur hidup"]].map(([id,l])=>(
+          <button key={id} className={"pil"+(lingkup===id?" aktif":"")} onClick={()=>setLingkup(id)}>{l}</button>
+        ))}
+        {lingkup==="tahun" && (
+          <select value={tahun} onChange={e=>setTahun(+e.target.value)} style={{width:"auto",padding:"7px 10px",borderRadius:999,fontSize:12.5}}>
+            {daftarTahun.map(y=><option key={y} value={y}>{y}</option>)}
+          </select>
+        )}
+      </div>
+
+      <Kartu judul={"Ringkasan · "+judulLingkup}>
+        <div className="grid2" style={{gap:12}}>
+          <div><div className="samar">Total masuk</div><div className="num naik" style={{fontSize:17,fontWeight:700}}>{rp(masuk)}</div></div>
+          <div><div className="samar">Belanja murni</div><div className="num turun" style={{fontSize:17,fontWeight:700}}>{rp(belanja)}</div></div>
+          <div><div className="samar">Disisihkan ke tabungan</div><div className="num" style={{fontSize:15,fontWeight:650}}>{rp(disisihkan)}</div></div>
+          <div><div className="samar">Sisa belum teralokasi</div><div className="num" style={{fontSize:15,fontWeight:650}}>{rp(masuk-belanja-disisihkan)}</div></div>
+        </div>
+        <div className="peringatan p-info" style={{marginTop:12}}>
+          <span>ℹ️</span>
+          <div>Uang yang lu pindahkan ke tabungan tidak dihitung sebagai belanja — itu masih uang lu. Makanya “belanja murni” dipisah.</div>
+        </div>
+        <div className="grid2" style={{marginTop:12,borderTop:"1px solid var(--garis)",paddingTop:12,gap:12}}>
+          <div><div className="samar">Rasio menabung</div><div className="num" style={{fontWeight:650}}>{rasio}%</div></div>
+          <div><div className="samar">Rata-rata per hari</div><div className="num" style={{fontWeight:650}}>{rp(belanja/Math.max(1,hariKalender))}</div></div>
+          <div><div className="samar">Median harian</div><div className="num" style={{fontWeight:650}}>{rp(median)}</div></div>
+          <div><div className="samar">Jumlah transaksi</div><div className="num" style={{fontWeight:650}}>{list.length}</div></div>
+        </div>
+      </Kartu>
+
+      {/* Uang ke mana */}
+      <Kartu judul={`Uang ${rp(totalKeluar)} ini ke mana?`}>
+        {pohon.length===0 ? <Kosong ikon="📊" teks="Belum ada pengeluaran pada periode ini."/> : (
+          <div style={{display:"grid",gap:10}}>
+            {pohon.map(p=>(
+              <div key={p.id} style={{border:"1px solid var(--garis)",borderRadius:14,overflow:"hidden"}}>
+                <button onClick={()=>setBuka({...buka,[p.id]:!buka[p.id]})}
+                  style={{width:"100%",padding:"11px 13px",textAlign:"left"}}>
+                  <div className="antara">
+                    <span className="baris" style={{gap:8,fontSize:13.5,fontWeight:600}}>
+                      <i style={{width:10,height:10,borderRadius:3,background:p.warna,display:"block"}}/>
+                      {p.ikon} {p.nama}
+                    </span>
+                    <span className="num" style={{fontWeight:650}}>{rp(p.total)}</span>
+                  </div>
+                  <div style={{marginTop:7}}><Bar persen={p.total/(totalKeluar||1)*100} warna={p.warna}/></div>
+                  <div className="samar" style={{marginTop:4}}>
+                    {Math.round(p.total/(totalKeluar||1)*100)}% dari total · {p.kategori.length} kategori · ketuk untuk rincian {buka[p.id]?"▴":"▾"}
+                  </div>
+                </button>
+                {buka[p.id] && (
+                  <div style={{padding:"0 13px 12px",borderTop:"1px solid var(--garis)"}}>
+                    {p.kategori.map(k=>(
+                      <div key={k.id} style={{marginTop:11}}>
+                        <div className="antara" style={{fontSize:13}}>
+                          <span>{k.ikon} {k.nama} <span className="samar">({k.n}×)</span></span>
+                          <span className="num" style={{fontWeight:600}}>{rp(k.total)}</span>
+                        </div>
+                        <div style={{marginTop:5,paddingLeft:10,borderLeft:"2px solid var(--garis)"}}>
+                          {k.tx.map(t=>(
+                            <div key={t.id} className="antara samar" style={{padding:"3px 0"}}>
+                              <span className="potong">{t.catatan||"tanpa catatan"} · {tglPendek(t.tanggal)}</span>
+                              <span className="num">{rp(t.nominal)}</span>
+                            </div>
+                          ))}
+                          {k.n>3 && <div className="samar">+{k.n-3} transaksi lain</div>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </Kartu>
+
+      {perKategori.length>0 && (
+        <Kartu judul="Bagan kategori">
+          <div style={{display:"flex",flexWrap:"wrap",gap:16,alignItems:"center",justifyContent:"center"}}>
+            <Donat data={perKategori.map(k=>({nilai:k.total,warna:k.warna}))} tengah={rpk(totalKeluar)} bawah="total keluar"/>
+            <div style={{flex:"1 1 220px",display:"grid",gap:6}}>
+              {perKategori.slice(0,8).map(k=>(
+                <div key={k.id} className="baris" style={{fontSize:12.5}}>
+                  <i style={{width:10,height:10,borderRadius:3,background:k.warna,display:"block"}}/>
+                  <span className="isi potong">{k.nama}</span>
+                  <span className="samar">{Math.round(k.total/(totalKeluar||1)*100)}%</span>
+                  <span className="num" style={{width:86,textAlign:"right"}}>{rpk(k.total)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{overflowX:"auto",marginTop:14}}>
+            <table className="tabel">
+              <thead><tr><th>Kategori</th><th className="ka">Total</th><th className="ka">Kali</th><th className="ka">Rata-rata</th>{lingkup==="bulan"&&<th className="ka">vs lalu</th>}</tr></thead>
+              <tbody>
+                {perKategori.map(k=>(
+                  <tr key={k.id}>
+                    <td>{k.ikon} {k.nama}</td>
+                    <td className="ka num">{rpk(k.total)}</td>
+                    <td className="ka num samar">{k.n}×</td>
+                    <td className="ka num samar">{rpk(k.rata)}</td>
+                    {lingkup==="bulan" && <td className={"ka num "+(k.beda==null?"samar":k.beda>0?"turun":"naik")}>
+                      {k.beda==null?"–":(k.beda>0?"+":"")+k.beda+"%"}</td>}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Kartu>
+      )}
+
+      {terbesar.length>0 && (
+        <Kartu judul="5 pengeluaran terbesar">
+          {terbesar.map(t=>(
+            <div key={t.id} className="antara" style={{padding:"7px 0",borderBottom:"1px solid var(--garis)"}}>
+              <div className="isi potong" style={{fontSize:13}}>
+                {kat(t.kategori).ikon} {t.catatan||kat(t.kategori).nama}
+                <span className="samar" style={{display:"block"}}>{tglPendek(t.tanggal)} · {kat(t.kategori).nama}</span>
+              </div>
+              <span className="num turun" style={{fontWeight:650}}>{rp(t.nominal)}</span>
+            </div>
+          ))}
+        </Kartu>
+      )}
+
+      <Kartu judul="Masuk vs keluar (6 bulan terakhir)"><BatangGrup data={enamBulan}/></Kartu>
+
+      {saldoJalan.length>1 && (
+        <Kartu judul="Perjalanan saldo"><Garis data={saldoJalan}/>
+          <div className="samar" style={{marginTop:6}}>Saldo akhir tiap bulan sejak catatan pertama.</div>
+        </Kartu>
+      )}
+
+      <Kartu judul={"Rekap bulanan "+tahun} aksi={
+        <select value={tahun} onChange={e=>setTahun(+e.target.value)} style={{width:"auto",padding:"5px 8px",fontSize:12}}>
+          {daftarTahun.map(y=><option key={y} value={y}>{y}</option>)}
+        </select>}>
+        <div style={{overflowX:"auto"}}>
+          <table className="tabel">
+            <thead><tr><th>Bulan</th><th className="ka">Masuk</th><th className="ka">Keluar</th><th className="ka">Selisih</th></tr></thead>
+            <tbody>
+              {rekapBulan.map(r=>(
+                <tr key={r.k}>
+                  <td style={{fontWeight:550}}>{r.label}</td>
+                  <td className="ka num naik">{r.masuk?rpk(r.masuk):"–"}</td>
+                  <td className="ka num turun">{r.keluar?rpk(r.keluar):"–"}</td>
+                  <td className={"ka num "+(r.selisih<0?"turun":"")}>{r.n?rpk(r.selisih):"–"}</td>
+                </tr>
+              ))}
+              <tr style={{fontWeight:700}}>
+                <td>Total</td>
+                <td className="ka num naik">{rpk(totalTahun.masuk)}</td>
+                <td className="ka num turun">{rpk(totalTahun.keluar)}</td>
+                <td className="ka num">{rpk(totalTahun.masuk-totalTahun.keluar)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </Kartu>
+
+      {rekapTahun.length>0 && (
+        <Kartu judul="Rekap per tahun">
+          {rekapTahun.map(([y,v])=>(
+            <button key={y} onClick={()=>{setTahun(+y); setLingkup("tahun");}}
+              style={{display:"flex",width:"100%",gap:10,alignItems:"center",padding:"8px 0",textAlign:"left"}}>
+              <span className="num" style={{width:46,fontWeight:650}}>{y}</span>
+              <div className="isi">
+                <Bar persen={v.masuk>0? v.keluar/v.masuk*100 : 100} warna={v.keluar>v.masuk?"var(--merah)":"var(--hijau2)"}/>
+                <div className="samar" style={{marginTop:3}}>Masuk {rpk(v.masuk)} · Keluar {rpk(v.keluar)} · {v.n} transaksi</div>
+              </div>
+              <span className={"num "+(v.masuk-v.keluar<0?"turun":"naik")} style={{fontWeight:650}}>{rpk(v.masuk-v.keluar)}</span>
+            </button>
+          ))}
+        </Kartu>
+      )}
+
+      {perMetode.length>0 && (
+        <Kartu judul="Metode pembayaran">
+          {perMetode.map(m=>(
+            <div key={m.id} className="antara" style={{padding:"6px 0",fontSize:13}}>
+              <span>{m.ikon} {m.nama}</span>
+              <span className="baris" style={{gap:10}}>
+                <span className="samar">{m.n}×</span>
+                <span className="num turun" style={{width:92,textAlign:"right"}}>{m.keluar?rp(m.keluar):"–"}</span>
+              </span>
+            </div>
+          ))}
+        </Kartu>
+      )}
+
+      <Kartu judul="Insight">
+        <div style={{display:"grid",gap:8}}>
+          {insight.map((s,i)=><div key={i} className="peringatan p-info"><span>💡</span><div>{s}</div></div>)}
+        </div>
+      </Kartu>
+
+      <Kartu judul="Ekspor & cetak">
+        <div className="grid2" style={{gap:8}}>
+          <button className="tbl" onClick={eksporTx}>⬇ Transaksi CSV</button>
+          <button className="tbl" onClick={eksporRekap}>⬇ Rekap {tahun}</button>
+          <button className="tbl" onClick={salin}>📋 Salin ringkasan</button>
+          <button className="tbl" onClick={()=>window.print()}>🖨 Cetak / PDF</button>
+        </div>
+        <div className="baris" style={{marginTop:10,gap:8,fontSize:12.5}}>
+          <span className="samar">Pemisah CSV</span>
+          {[[";","titik koma (Excel ID)"],[",","koma (Google Sheets)"]].map(([v,l])=>(
+            <button key={v} className={"pil"+(P===v?" aktif":"")} onClick={()=>aksi.setSetelan({pemisahCsv:v})}>{l}</button>
+          ))}
+        </div>
+      </Kartu>
+    </div>
+  );
+}
+
+/* ================= RENCANA: anggaran, tagihan, tujuan ================= */
+function Rencana({db, aksi}){
+  const mk = bulanIni(), tgl = new Date().getDate();
+  const R = ringkasBulan(db,mk);
+  const [fAnggaran,setFAnggaran] = useState(null);
+  const [fTagihan,setFTagihan]   = useState(null);
+  const [fTujuan,setFTujuan]     = useState(null);
+  const [setor,setSetor]         = useState(null);
+
+  const anggaran = db.anggaran.filter(a=>a.bulan===mk);
+  const tagihan  = tagihanBulan(db,mk).sort((a,b)=>a.tanggal-b.tanggal);
+  const totalTagihan = tagihan.reduce((s,t)=>s+t.nominal,0);
+  const sudah = tagihan.filter(t=>t.lunas).reduce((s,t)=>s+t.nominal,0);
+
+  return (
+    <div className="blok">
+      {/* Tagihan rutin */}
+      <Kartu judul="Tagihan rutin bulan ini"
+        aksi={<button className="tbl" style={{padding:"7px 11px",minHeight:34}} onClick={()=>setFTagihan({})}>+ Tambah</button>}>
+        {tagihan.length===0
+          ? <Kosong ikon="🧾" teks="Belum ada tagihan rutin. Daftarkan sewa, listrik, internet, dan langganan — ini penyebab utama budget bocor."/>
+          : <>
+              <div className="antara" style={{marginBottom:10}}>
+                <span className="samar">{rp(sudah)} dari {rp(totalTagihan)} sudah dibayar</span>
+                <span className="num samar">{Math.round(sudah/(totalTagihan||1)*100)}%</span>
+              </div>
+              <Bar persen={sudah/(totalTagihan||1)*100} warna="var(--hijau2)"/>
+              <div style={{marginTop:12,display:"grid",gap:9}}>
+                {tagihan.map(t=>{
+                  const selisih = t.tanggal - tgl;
+                  const status = t.lunas ? "lunas" : selisih<0 ? "telat" : selisih<=3 ? "dekat" : "aman";
+                  const warna = {lunas:"var(--hijau)", telat:"var(--merah)", dekat:"var(--kuning)", aman:"var(--redup)"}[status];
+                  return (
+                    <div key={t.id} className="baris" style={{gap:10,border:"1px solid var(--garis)",borderRadius:13,padding:"10px 12px"}}>
+                      <div className="ikon" style={{background:"var(--lembut)"}}>{kat(t.kategori).ikon}</div>
+                      <button className="isi" style={{textAlign:"left"}} onClick={()=>setFTagihan(t)}>
+                        <div style={{fontSize:13.5,fontWeight:600}}>{t.nama}</div>
+                        <div className="samar" style={{color:warna}}>
+                          Tiap tanggal {t.tanggal} · {t.lunas?"sudah dibayar":selisih<0?`telat ${-selisih} hari`:selisih===0?"jatuh tempo hari ini":`${selisih} hari lagi`}
+                        </div>
+                      </button>
+                      <div style={{textAlign:"right"}}>
+                        <div className="num" style={{fontWeight:650,fontSize:13.5}}>{rp(t.nominal)}</div>
+                        {!t.lunas && <button className="tbl" style={{padding:"5px 9px",minHeight:30,marginTop:4,fontSize:11.5}}
+                          onClick={()=>aksi.bayarTagihan(t)}>Tandai lunas</button>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="samar" style={{marginTop:10}}>“Tandai lunas” sekaligus membuat transaksi pengeluarannya, jadi tidak perlu catat dua kali.</div>
+            </>}
+      </Kartu>
+
+      {/* Anggaran kategori */}
+      <Kartu judul={`Anggaran ${namaBulan(mk)}`}
+        aksi={<button className="tbl" style={{padding:"7px 11px",minHeight:34}} onClick={()=>setFAnggaran({})}>+ Tambah</button>}>
+        <div className="samar" style={{marginBottom:10}}>Batas halus per kategori, di dalam pos alokasi. Pakai kalau ada kategori yang sering kebablasan.</div>
+        {anggaran.length===0
+          ? <Kosong ikon="🎯" teks="Belum ada anggaran kategori."/>
+          : <div style={{display:"grid",gap:13}}>
+              {anggaran.map(a=>{
+                const k = kat(a.kategori);
+                const kepakai = R.list.filter(t=>t.jenis==="keluar"&&t.kategori===a.kategori).reduce((s,t)=>s+t.nominal,0);
+                const pct = kepakai/a.batas*100;
+                return (
+                  <div key={a.id}>
+                    <div className="antara" style={{marginBottom:4}}>
+                      <button onClick={()=>setFAnggaran(a)} style={{fontSize:13.5,fontWeight:550}}>{k.ikon} {k.nama}</button>
+                      <span className="baris" style={{gap:8}}>
+                        <span className="num samar" style={{color:pct>=90?"var(--merah)":"var(--redup)"}}>{rpk(kepakai)} / {rpk(a.batas)}</span>
+                        <button onClick={()=>aksi.hapusAnggaran(a.id)} style={{color:"var(--samar)"}}>🗑</button>
+                      </span>
+                    </div>
+                    <Bar persen={pct}/>
+                    <div className="samar" style={{marginTop:3,color:pct>=90?"var(--merah)":"var(--redup)"}}>
+                      {kepakai<=a.batas? `Sisa ${rp(a.batas-kepakai)}` : `Lewat ${rp(kepakai-a.batas)}`} · {Math.round(pct)}%
+                    </div>
+                  </div>
+                );
+              })}
+            </div>}
+      </Kartu>
+
+      {/* Tujuan */}
+      <Kartu judul="Tujuan keuangan"
+        aksi={<button className="tbl" style={{padding:"7px 11px",minHeight:34}} onClick={()=>setFTujuan({})}>+ Tambah</button>}>
+        {db.tujuan.length===0
+          ? <Kosong ikon="🏆" teks="Belum ada tujuan. Menabung tanpa tujuan paling gampang bubar di tengah jalan."/>
+          : <div style={{display:"grid",gap:12}}>
+              {db.tujuan.map(g=>{
+                const pct = Math.min(100, g.terkumpul/g.target*100);
+                const sisaHari = g.tenggat? Math.ceil((new Date(g.tenggat)-new Date())/864e5) : null;
+                const perBulan = sisaHari&&sisaHari>0 ? (g.target-g.terkumpul)/Math.max(1,sisaHari/30) : 0;
+                const selesai = g.terkumpul>=g.target;
+                return (
+                  <div key={g.id} style={{border:"1px solid var(--garis)",borderRadius:14,padding:13}}>
+                    <div className="antara" style={{alignItems:"flex-start"}}>
+                      <button onClick={()=>setFTujuan(g)} style={{textAlign:"left"}}>
+                        <div style={{fontSize:14,fontWeight:650}}>{g.ikon||"🎯"} {g.nama}</div>
+                        <div className="samar">Target {rp(g.target)}
+                          {sisaHari!==null && " · "+(sisaHari>0? `${sisaHari} hari lagi` : "lewat tenggat")}</div>
+                      </button>
+                      <button onClick={()=>aksi.hapusTujuan(g.id)} style={{color:"var(--samar)"}}>🗑</button>
+                    </div>
+                    <div style={{marginTop:9}}><Bar persen={pct} warna={selesai?"var(--hijau)":undefined}/></div>
+                    <div className="antara" style={{marginTop:6}}>
+                      <span className="num" style={{fontSize:13}}>{rp(g.terkumpul)} <span className="samar">({Math.round(pct)}%)</span></span>
+                      <button className="tbl" style={{padding:"6px 11px",minHeight:32,fontSize:12}} onClick={()=>setSetor(g)}>+ Setor</button>
+                    </div>
+                    {!selesai && perBulan>0 && (
+                      <div className="samar" style={{marginTop:7}}>Sisihkan sekitar <b className="num">{rpk(perBulan)}</b> per bulan supaya tepat waktu.</div>
+                    )}
+                    {selesai && <div className="naik" style={{marginTop:7,fontSize:12.5,fontWeight:600}}>🎉 Tercapai</div>}
+                  </div>
+                );
+              })}
+            </div>}
+      </Kartu>
+
+      <FormAnggaran item={fAnggaran} tutup={()=>setFAnggaran(null)} simpan={aksi.simpanAnggaran} mk={mk}/>
+      <FormTagihan  item={fTagihan}  tutup={()=>setFTagihan(null)}  simpan={aksi.simpanTagihan} hapus={aksi.hapusTagihan}/>
+      <FormTujuan   item={fTujuan}   tutup={()=>setFTujuan(null)}   simpan={aksi.simpanTujuan}/>
+      <FormSetor    item={setor}     tutup={()=>setSetor(null)}     simpan={aksi.setorTujuan}/>
+    </div>
+  );
+}
+
+function FormAnggaran({item, tutup, simpan, mk}){
+  const [kategori,setKat] = useState("makanan");
+  const [batas,setBatas]  = useState("");
+  useEffect(()=>{ if(!item) return; setKat(item.kategori||"makanan"); setBatas(item.batas?nf.format(item.batas):""); },[item]);
+  return (
+    <Lembar buka={!!item} tutup={tutup} judul={item&&item.id?"Ubah anggaran":"Tambah anggaran"}>
+      <Bidang label="Kategori">
+        <select value={kategori} onChange={e=>setKat(e.target.value)}>
+          {KAT_KELUAR.map(k=><option key={k.id} value={k.id}>{k.ikon} {k.nama}</option>)}
+        </select>
+      </Bidang>
+      <Bidang label="Batas per bulan"><InputNominal nilai={batas} set={setBatas}/></Bidang>
+      <button className="tbl tbl-utama tbl-penuh" style={{marginTop:14}}
+        onClick={()=>{ if(angka(batas)>0){ simpan({id:item.id||uid(), kategori, batas:angka(batas), bulan:item.bulan||mk}); tutup(); } }}>
+        Simpan anggaran
+      </button>
+    </Lembar>
+  );
+}
+
+function FormTagihan({item, tutup, simpan, hapus}){
+  const [nama,setNama] = useState("");
+  const [nominal,setNominal] = useState("");
+  const [tanggal,setTanggal] = useState(1);
+  const [kategori,setKat] = useState("tagihan");
+  const [metode,setMetode] = useState("bank");
+  useEffect(()=>{
+    if(!item) return;
+    setNama(item.nama||""); setNominal(item.nominal?nf.format(item.nominal):"");
+    setTanggal(item.tanggal||1); setKat(item.kategori||"tagihan"); setMetode(item.metode||"bank");
+  },[item]);
+  return (
+    <Lembar buka={!!item} tutup={tutup} judul={item&&item.id?"Ubah tagihan":"Tagihan rutin"}>
+      <Bidang label="Nama tagihan"><input value={nama} onChange={e=>setNama(e.target.value)} placeholder="Contoh: Internet IndiHome"/></Bidang>
+      <Bidang label="Nominal"><InputNominal nilai={nominal} set={setNominal}/></Bidang>
+      <div className="grid2" style={{marginTop:12}}>
+        <Bidang label="Jatuh tempo tiap tanggal">
+          <select value={tanggal} onChange={e=>setTanggal(+e.target.value)}>
+            {Array.from({length:28},(_,i)=>i+1).map(d=><option key={d} value={d}>{d}</option>)}
+          </select>
+        </Bidang>
+        <Bidang label="Bayar pakai">
+          <select value={metode} onChange={e=>setMetode(e.target.value)}>
+            {METODE.map(m=><option key={m.id} value={m.id}>{m.ikon} {m.nama}</option>)}
+          </select>
+        </Bidang>
+      </div>
+      <Bidang label="Kategori">
+        <select value={kategori} onChange={e=>setKat(e.target.value)}>
+          {KAT_KELUAR.map(k=><option key={k.id} value={k.id}>{k.ikon} {k.nama}</option>)}
+        </select>
+      </Bidang>
+      <div className="samar" style={{marginTop:10}}>Tanggal dibatasi sampai 28 supaya tetap jalan di bulan Februari.</div>
+      <div className="baris" style={{gap:8,marginTop:14}}>
+        {item&&item.id && <button className="tbl" style={{color:"var(--merah)"}} onClick={()=>{hapus(item.id); tutup();}}>🗑</button>}
+        <button className="tbl tbl-utama tbl-penuh"
+          onClick={()=>{ if(nama.trim()&&angka(nominal)>0){
+            simpan({id:item.id||uid(), nama:nama.trim(), nominal:angka(nominal), tanggal, kategori, metode,
+                    aktif:true, terakhirBayar:item.terakhirBayar||null}); tutup(); } }}>
+          Simpan tagihan
+        </button>
+      </div>
+    </Lembar>
+  );
+}
+
+function FormTujuan({item, tutup, simpan}){
+  const [nama,setNama] = useState("");
+  const [ikon,setIkon] = useState("🎯");
+  const [target,setTarget] = useState("");
+  const [terkumpul,setTerkumpul] = useState("");
+  const [tenggat,setTenggat] = useState("");
+  useEffect(()=>{
+    if(!item) return;
+    setNama(item.nama||""); setIkon(item.ikon||"🎯");
+    setTarget(item.target?nf.format(item.target):""); setTerkumpul(item.terkumpul?nf.format(item.terkumpul):"");
+    setTenggat(item.tenggat||"");
+  },[item]);
+  return (
+    <Lembar buka={!!item} tutup={tutup} judul={item&&item.id?"Ubah tujuan":"Tujuan baru"}>
+      <Bidang label="Nama tujuan"><input value={nama} onChange={e=>setNama(e.target.value)} placeholder="Contoh: Dana darurat 6 bulan"/></Bidang>
+      <Bidang label="Ikon">
+        <div className="pils">
+          {["🎯","🛟","💻","🏍️","🏠","🕋","✈️","🎓","💍","👶"].map(e=>(
+            <button key={e} className={"pil"+(ikon===e?" aktif":"")} onClick={()=>setIkon(e)} style={{fontSize:16}}>{e}</button>
+          ))}
+        </div>
+      </Bidang>
+      <Bidang label="Target"><InputNominal nilai={target} set={setTarget}/></Bidang>
+      <div className="grid2" style={{marginTop:12}}>
+        <Bidang label="Sudah terkumpul"><input inputMode="numeric" className="num" value={terkumpul} onChange={e=>setTerkumpul(ketik(e.target.value))} placeholder="0"/></Bidang>
+        <Bidang label="Tenggat"><input type="date" value={tenggat} onChange={e=>setTenggat(e.target.value)}/></Bidang>
+      </div>
+      <button className="tbl tbl-utama tbl-penuh" style={{marginTop:14}}
+        onClick={()=>{ if(nama.trim()&&angka(target)>0){
+          simpan({id:item.id||uid(), nama:nama.trim(), ikon, target:angka(target), terkumpul:angka(terkumpul), tenggat:tenggat||null});
+          tutup(); } }}>Simpan tujuan</button>
+    </Lembar>
+  );
+}
+
+function FormSetor({item, tutup, simpan}){
+  const [nominal,setNominal] = useState("");
+  const [catat,setCatat] = useState(true);
+  useEffect(()=>{ if(item) { setNominal(""); setCatat(true);} },[item]);
+  return (
+    <Lembar buka={!!item} tutup={tutup} judul={item? "Setor ke "+item.nama : ""}>
+      <InputNominal nilai={nominal} set={setNominal} fokus/>
+      <div className="pils" style={{marginTop:10}}>
+        {[100000,250000,500000,1000000].map(n=>(
+          <button key={n} className="pil" onClick={()=>setNominal(nf.format(n))}>{rpk(n)}</button>
+        ))}
+      </div>
+      <label className="baris" style={{gap:9,marginTop:14,background:"var(--lembut)",padding:"10px 12px",borderRadius:12,cursor:"pointer"}}>
+        <input type="checkbox" checked={catat} onChange={e=>setCatat(e.target.checked)}
+          style={{width:18,height:18,padding:0,flex:"0 0 18px",accentColor:"#047857"}}/>
+        <span style={{fontSize:12.5}}>Catat juga sebagai transaksi Tabungan
+          <span className="samar" style={{display:"block"}}>Supaya saldo dan laporan ikut menyesuaikan</span></span>
+      </label>
+      <button className="tbl tbl-utama tbl-penuh" style={{marginTop:14}}
+        onClick={()=>{ if(angka(nominal)>0){ simpan(item, angka(nominal), catat); tutup(); } }}>Simpan setoran</button>
+    </Lembar>
+  );
+}
+
+/* ================= ASET ================= */
+function Aset({db, aksi}){
+  const [form,setForm] = useState(null);
+  const aset = db.aset.filter(a=>a.jenis==="aset");
+  const hutang = db.aset.filter(a=>a.jenis==="hutang");
+  const totalAset = aset.reduce((s,a)=>s+a.nominal,0);
+  const totalHutang = hutang.reduce((s,a)=>s+a.nominal,0);
+  const bersih = totalAset-totalHutang;
+  const saldo = saldoTotal(db);
+  const tunaiAset = aset.filter(a=>["Tunai","Rekening Bank"].includes(a.tipe)).reduce((s,a)=>s+a.nominal,0);
+  const beda = tunaiAset - saldo;
+
+  const Daftar = ({judul, list, jenis, warna}) => (
+    <Kartu judul={judul} aksi={<button className="tbl" style={{padding:"7px 11px",minHeight:34}} onClick={()=>setForm({jenis})}>+ Tambah</button>}>
+      {list.length===0 ? <div className="samar">Belum ada data.</div> :
+        list.map(a=>(
+          <div key={a.id} className="baris" style={{gap:8,padding:"8px 0",borderBottom:"1px solid var(--garis)"}}>
+            <button className="isi" style={{textAlign:"left"}} onClick={()=>setForm(a)}>
+              <div className="potong" style={{fontSize:13.5,fontWeight:550}}>{a.nama}</div>
+              <div className="samar">{a.tipe}</div>
+            </button>
+            <span className="num" style={{fontWeight:650,color:warna}}>{rp(a.nominal)}</span>
+            <button onClick={()=>aksi.hapusAset(a.id)} style={{color:"var(--samar)"}}>🗑</button>
+          </div>
+        ))}
+    </Kartu>
+  );
+
+  return (
+    <div className="blok">
+      <Kartu>
+        <div className="samar">Kekayaan bersih</div>
+        <div className="num" style={{fontSize:28,fontWeight:700,marginTop:2,color:bersih<0?"var(--merah)":"inherit"}}>{rp(bersih)}</div>
+        <div className="baris" style={{gap:16,marginTop:8,fontSize:12.5}}>
+          <span>Aset <b className="num naik">{rpk(totalAset)}</b></span>
+          <span>Hutang <b className="num turun">{rpk(totalHutang)}</b></span>
+        </div>
+        <div style={{marginTop:11}}>
+          <Bar persen={totalAset>0? (totalAset-totalHutang)/totalAset*100 : 0} warna="var(--hijau2)"/>
+          <div className="samar" style={{marginTop:5}}>
+            {totalAset>0 ? `${Math.round(totalHutang/totalAset*100)}% dari aset lu masih tertahan hutang.` : "Tambahkan aset untuk melihat perbandingan."}
+          </div>
+        </div>
+      </Kartu>
+
+      <Kartu judul="Cocokkan dengan catatan">
+        <div className="antara">
+          <div><div className="samar">Saldo menurut catatan transaksi</div><div className="num" style={{fontWeight:650}}>{rp(saldo)}</div></div>
+          <div style={{textAlign:"right"}}><div className="samar">Tunai + bank di daftar aset</div><div className="num" style={{fontWeight:650}}>{rp(tunaiAset)}</div></div>
+        </div>
+        <div className={"peringatan "+(Math.abs(beda)<50000?"p-info":"p-waspada")} style={{marginTop:11}}>
+          <span>{Math.abs(beda)<50000?"✅":"⚠️"}</span>
+          <div>{Math.abs(beda)<50000
+            ? "Cocok. Catatan lu rapi."
+            : <>Selisih {rp(Math.abs(beda))}. Biasanya ada transaksi yang belum tercatat, atau nilai aset belum diperbarui. Cek yang mana.</>}</div>
+        </div>
+      </Kartu>
+
+      <Daftar judul="Aset" list={aset} jenis="aset" warna="var(--hijau)"/>
+      <Daftar judul="Hutang & cicilan" list={hutang} jenis="hutang" warna="var(--merah)"/>
+
+      <FormAset item={form} tutup={()=>setForm(null)} simpan={aksi.simpanAset}/>
+    </div>
+  );
+}
+
+function FormAset({item, tutup, simpan}){
+  const [nama,setNama] = useState("");
+  const [tipe,setTipe] = useState("Tunai");
+  const [nominal,setNominal] = useState("");
+  const jenis = item?.jenis || "aset";
+  useEffect(()=>{
+    if(!item) return;
+    setNama(item.nama||""); setTipe(item.tipe||(item.jenis==="hutang"?"Cicilan":"Tunai"));
+    setNominal(item.nominal?nf.format(item.nominal):"");
+  },[item]);
+  const pilihan = jenis==="hutang"? TIPE_HUTANG : TIPE_ASET;
+  return (
+    <Lembar buka={!!item} tutup={tutup} judul={jenis==="hutang"?"Hutang / cicilan":"Aset"}>
+      <Bidang label="Nama"><input value={nama} onChange={e=>setNama(e.target.value)}
+        placeholder={jenis==="hutang"?"Contoh: cicilan motor":"Contoh: rekening BCA"}/></Bidang>
+      <Bidang label="Jenis">
+        <select value={tipe} onChange={e=>setTipe(e.target.value)}>{pilihan.map(p=><option key={p} value={p}>{p}</option>)}</select>
+      </Bidang>
+      <Bidang label="Nilai saat ini"><InputNominal nilai={nominal} set={setNominal}/></Bidang>
+      <button className="tbl tbl-utama tbl-penuh" style={{marginTop:14}}
+        onClick={()=>{ if(nama.trim()&&angka(nominal)>0){ simpan({id:item.id||uid(), jenis, nama:nama.trim(), tipe, nominal:angka(nominal)}); tutup(); } }}>
+        Simpan</button>
+    </Lembar>
+  );
+}
+
+/* ================= PIN ================= */
+async function hashPin(pin){
+  try{
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("myfinance:"+pin));
+    return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+  }catch(e){ return "polos:"+pin; }
+}
+function LayarKunci({cocokkan}){
+  const [pin,setPin] = useState("");
+  const [galat,setGalat] = useState("");
+  const coba = async v => {
+    if(v.length<4) return;
+    const ok = await cocokkan(v);
+    if(!ok){ setGalat("PIN salah."); setPin(""); }
+  };
+  return (
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      <div style={{textAlign:"center",maxWidth:300,width:"100%"}}>
+        <div style={{fontSize:34}}>🔒</div>
+        <h2 style={{marginTop:8}}>My Finance</h2>
+        <div className="samar" style={{marginTop:4}}>Masukkan PIN</div>
+        <input inputMode="numeric" type="password" autoFocus value={pin} maxLength={6}
+          onChange={e=>{ const v=e.target.value.replace(/\D/g,""); setPin(v); setGalat(""); if(v.length>=4) coba(v); }}
+          className="num" style={{textAlign:"center",fontSize:24,letterSpacing:"0.3em",marginTop:18}}/>
+        {galat && <div className="turun" style={{marginTop:8,fontSize:12.5}}>{galat}</div>}
+        <div className="samar" style={{marginTop:16,lineHeight:1.5}}>
+          PIN hanya menghalangi orang melihat sekilas. Data di perangkat ini tidak terenkripsi, jadi jangan anggap ini pengaman kuat.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ================= PENGENALAN AWAL ================= */
+function Pengenalan({selesai, pakaiContoh}){
+  const [langkah,setLangkah] = useState(0);
+  const [nama,setNama] = useState("");
+  const [pemasukan,setPemasukan] = useState("");
+  const [templat,setTemplat] = useState(TEMPLAT[0]);
+  const dasar = angka(pemasukan);
+
+  return (
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div style={{width:"100%",maxWidth:420}}>
+        <div className="kartu">
+          {langkah===0 && (
+            <>
+              <div style={{fontSize:32}}>💰</div>
+              <h2 style={{marginTop:8,fontSize:20}}>My Finance</h2>
+              <p className="sub" style={{marginTop:8,lineHeight:1.6}}>
+                Catat pemasukan dan pengeluaran, bagi uang ke pos-pos, dan lihat ke mana uang lu pergi.
+                Semua tersimpan di perangkat ini saja — tidak ada yang dikirim ke mana pun.
+              </p>
+              <button className="tbl tbl-utama tbl-penuh" style={{marginTop:16}} onClick={()=>setLangkah(1)}>Mulai dari nol</button>
+              <button className="tbl tbl-penuh" style={{marginTop:8}} onClick={pakaiContoh}>Lihat contoh dulu</button>
+              <div className="samar" style={{marginTop:10,textAlign:"center"}}>Data contoh bisa dihapus kapan saja di Pengaturan.</div>
+            </>
+          )}
+          {langkah===1 && (
+            <>
+              <div className="samar">Langkah 1 dari 3</div>
+              <h2 style={{marginTop:6,fontSize:18}}>Gue panggil lu apa?</h2>
+              <input value={nama} onChange={e=>setNama(e.target.value)} placeholder="Nama panggilan" autoFocus style={{marginTop:14}}/>
+              <button className="tbl tbl-utama tbl-penuh" style={{marginTop:14}} onClick={()=>setLangkah(2)}>Lanjut</button>
+            </>
+          )}
+          {langkah===2 && (
+            <>
+              <div className="samar">Langkah 2 dari 3</div>
+              <h2 style={{marginTop:6,fontSize:18}}>Berapa pemasukan lu sebulan?</h2>
+              <div className="sub" style={{marginTop:6}}>Perkiraan saja. Nanti bisa diubah tiap bulan.</div>
+              <div style={{marginTop:14}}><InputNominal nilai={pemasukan} set={setPemasukan} fokus/></div>
+              <div className="baris" style={{gap:8,marginTop:14}}>
+                <button className="tbl" onClick={()=>setLangkah(1)}>‹</button>
+                <button className="tbl tbl-utama tbl-penuh" onClick={()=>setLangkah(3)} disabled={dasar<=0}
+                  style={{opacity:dasar<=0?.5:1}}>Lanjut</button>
+              </div>
+            </>
+          )}
+          {langkah===3 && (
+            <>
+              <div className="samar">Langkah 3 dari 3</div>
+              <h2 style={{marginTop:6,fontSize:18}}>{rp(dasar)} dibagi ke mana?</h2>
+              <div className="sub" style={{marginTop:6}}>Pilih pola. Bisa diubah kapan saja.</div>
+              <div style={{display:"grid",gap:8,marginTop:14}}>
+                {TEMPLAT.map(t=>(
+                  <button key={t.nama} onClick={()=>setTemplat(t)}
+                    style={{textAlign:"left",border:"1px solid "+(templat.nama===t.nama?"var(--hijau2)":"var(--garis)"),
+                      borderRadius:13,padding:12}}>
+                    <div className="antara"><b style={{fontSize:13.5}}>{t.nama}</b><span className="samar">{t.ket}</span></div>
+                    <div style={{marginTop:8}}>
+                      <BatangTumpuk tinggi={18} data={POS_BAWAAN.map(p=>({nilai:t.bagi[p.id]||0, warna:p.warna}))}/>
+                    </div>
+                    <div className="samar" style={{marginTop:6}}>
+                      {POS_BAWAAN.filter(p=>t.bagi[p.id]).map(p=>`${p.nama} ${rpk(dasar*t.bagi[p.id]/100)}`).join(" · ")}
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <div className="baris" style={{gap:8,marginTop:14}}>
+                <button className="tbl" onClick={()=>setLangkah(2)}>‹</button>
+                <button className="tbl tbl-utama tbl-penuh" onClick={()=>selesai(nama.trim()||"Kamu", dasar, templat)}>Selesai</button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ================= PENGATURAN ================= */
+function Pengaturan({buka, tutup, db, aksi}){
+  const [nama,setNama] = useState(db.profil.nama);
+  const [emoji,setEmoji] = useState(db.profil.emoji);
+  const [pin,setPin] = useState("");
+  const [konfirmHapus,setKonfirmHapus] = useState(false);
+  const berkasRef = useRef(null);
+  const ukuran = ukuranData();
+  const batas = 5*1024*1024;
+
+  useEffect(()=>{ if(buka){ setNama(db.profil.nama); setEmoji(db.profil.emoji); setPin(""); setKonfirmHapus(false);} },[buka]);
+
+  const pulihkan = async e => {
+    const f = e.target.files?.[0]; e.target.value="";
+    if(!f) return;
+    try{
+      const isi = JSON.parse(await f.text());
+      if(!isi || !Array.isArray(isi.transaksi)) throw new Error("bentuk");
+      aksi.pulihkan(isi);
+      tutup();
+    }catch(err){ aksi.roti("Berkas tidak dikenali. Pakai cadangan JSON dari aplikasi ini."); }
+  };
+
+  return (
+    <Lembar buka={buka} tutup={tutup} judul="Pengaturan">
+      <div style={{display:"grid",gap:20}}>
+        <div>
+          <h3 className="judul" style={{marginBottom:10}}>Profil</h3>
+          <div className="baris" style={{gap:12,marginBottom:10}}>
+            <div className="ikon" style={{width:50,height:50,flex:"0 0 50px",background:"var(--hijau)",color:"#fff",fontSize:22,borderRadius:14}}>
+              {emoji||nama.charAt(0)||"🙂"}
+            </div>
+            <div className="pils">
+              {["🙂","😎","🧑‍💻","🦊","🌱","⭐","🧕","🧔"].map(e=>(
+                <button key={e} className={"pil"+(emoji===e?" aktif":"")} onClick={()=>setEmoji(e)} style={{fontSize:16}}>{e}</button>
+              ))}
+            </div>
+          </div>
+          <input value={nama} onChange={e=>setNama(e.target.value)} placeholder="Nama"/>
+          <button className="tbl tbl-utama tbl-penuh" style={{marginTop:10}}
+            onClick={()=>{ aksi.setProfil({nama:nama.trim()||"Kamu", emoji}); aksi.roti("Profil diperbarui"); }}>Simpan profil</button>
+        </div>
+
+        <div style={{borderTop:"1px solid var(--garis)",paddingTop:16}}>
+          <h3 className="judul" style={{marginBottom:10}}>Tampilan</h3>
+          <div className="pils">
+            {[["terang","☀️ Terang"],["gelap","🌙 Gelap"],["sistem","⚙️ Ikut sistem"]].map(([v,l])=>(
+              <button key={v} className={"pil"+(db.setelan.tema===v?" aktif":"")} onClick={()=>aksi.setSetelan({tema:v})}>{l}</button>
+            ))}
+          </div>
+          <label className="antara" style={{marginTop:14,cursor:"pointer"}}>
+            <div className="isi">
+              <div style={{fontSize:13.5,fontWeight:550}}>Pengingat harian</div>
+              <div className="samar">Ingatkan kalau hari ini belum ada catatan</div>
+            </div>
+            <input type="checkbox" checked={db.setelan.pengingat} style={{width:20,height:20,padding:0,flex:"0 0 20px",accentColor:"#047857"}}
+              onChange={e=>aksi.setSetelan({pengingat:e.target.checked})}/>
+          </label>
+          <div className="samar" style={{marginTop:8}}>
+            Aplikasi ini tidak bisa mengirim notifikasi ke layar kunci HP. Kalau mau diingatkan tiap malam, pasang alarm berulang di HP jam 21.00.
+          </div>
+        </div>
+
+        <div style={{borderTop:"1px solid var(--garis)",paddingTop:16}}>
+          <h3 className="judul" style={{marginBottom:6}}>Kunci PIN</h3>
+          <div className="samar" style={{marginBottom:10}}>
+            Menghalangi orang yang pinjam HP lu melihat isi aplikasi. Bukan enkripsi — data di perangkat tetap bisa dibaca lewat cara lain.
+          </div>
+          {db.setelan.pinHash
+            ? <button className="tbl tbl-penuh" onClick={()=>aksi.setPin(null)}>Matikan PIN</button>
+            : <div className="baris" style={{gap:8}}>
+                <input inputMode="numeric" value={pin} maxLength={6} placeholder="4–6 angka"
+                  onChange={e=>setPin(e.target.value.replace(/\D/g,""))} className="num"/>
+                <button className="tbl tbl-utama" disabled={pin.length<4} style={{opacity:pin.length<4?.5:1}}
+                  onClick={()=>{ aksi.setPin(pin); setPin(""); }}>Pasang</button>
+              </div>}
+        </div>
+
+        <div style={{borderTop:"1px solid var(--garis)",paddingTop:16}}>
+          <h3 className="judul" style={{marginBottom:6}}>Data</h3>
+          <div className="samar" style={{marginBottom:10}}>
+            Cadangan terakhir: <b>{db.setelan.backupTerakhir? tglPanjang(db.setelan.backupTerakhir.slice(0,10)) : "belum pernah"}</b><br/>
+            Ukuran data: {(ukuran/1024).toFixed(0)} KB dari sekitar {(batas/1024/1024).toFixed(0)} MB
+          </div>
+          <div style={{marginBottom:12}}><Bar persen={ukuran/batas*100} warna={ukuran/batas>0.8?"var(--merah)":"var(--hijau2)"}/></div>
+          <button className="tbl tbl-utama tbl-penuh" onClick={aksi.unduhCadangan}>⬇ Unduh cadangan sekarang</button>
+          <button className="tbl tbl-penuh" style={{marginTop:8}} onClick={()=>berkasRef.current?.click()}>⬆ Pulihkan dari cadangan</button>
+          <input ref={berkasRef} type="file" accept="application/json" style={{display:"none"}} onChange={pulihkan}/>
+          <div className="samar" style={{marginTop:10}}>
+            Simpan berkas cadangan itu di Google Drive lu. Itu satu-satunya salinan yang benar-benar lu pegang — kalau browser dibersihkan, data di sini ikut hilang.
+          </div>
+        </div>
+
+        <div style={{borderTop:"1px solid var(--garis)",paddingTop:16}}>
+          <h3 className="judul" style={{marginBottom:10}}>Mulai ulang</h3>
+          {!konfirmHapus
+            ? <button className="tbl tbl-penuh" style={{color:"var(--merah)"}} onClick={()=>setKonfirmHapus(true)}>Hapus semua data</button>
+            : <div className="peringatan p-bahaya" style={{display:"block"}}>
+                <div style={{fontWeight:650}}>Yakin? Semua transaksi, alokasi, tagihan, tujuan, dan aset akan hilang.</div>
+                <div style={{marginTop:8}} className="baris">
+                  <button className="tbl isi" onClick={aksi.unduhCadangan}>Cadangkan dulu</button>
+                  <button className="tbl tbl-bahaya isi" onClick={()=>{aksi.hapusSemua(); tutup();}}>Hapus</button>
+                </div>
+                <button className="samar" style={{marginTop:8}} onClick={()=>setKonfirmHapus(false)}>Batal</button>
+              </div>}
+          <button className="tbl tbl-penuh" style={{marginTop:8}} onClick={()=>{aksi.muatContoh(); tutup();}}>Muat ulang data contoh</button>
+        </div>
+
+        <div className="samar" style={{textAlign:"center",borderTop:"1px solid var(--garis)",paddingTop:14}}>
+          My Finance v2 · berjalan sepenuhnya di perangkat lu · tanpa akun, tanpa server
+        </div>
+      </div>
+    </Lembar>
+  );
+}
+
+/* ================= APLIKASI ================= */
+const TAB = [
+  {id:"beranda", nama:"Beranda", ikon:"🏠"},
+  {id:"alokasi", nama:"Alokasi", ikon:"🧭"},
+  {id:"riwayat", nama:"Riwayat", ikon:"🧾"},
+  {id:"laporan", nama:"Laporan", ikon:"📊"},
+  {id:"rencana", nama:"Rencana", ikon:"🎯"},
+  {id:"aset",    nama:"Aset",    ikon:"🏛️"},
+];
+
+function App(){
+  const [db,setDb] = useState(null);
+  const [tab,setTab] = useState("beranda");
+  const [form,setForm] = useState(null);
+  const [setelanBuka,setSetelanBuka] = useState(false);
+  const [roti,setRoti] = useState(null);
+  const [status,setStatus] = useState("tersimpan");
+  const [terkunci,setTerkunci] = useState(false);
+  const [adaStorage] = useState(adaPenyimpanan);
+  const pertama = useRef(true);
+  const urung = useRef(null);
+
+  useEffect(()=>{
+    const {data, dariCadangan} = muat();
+    if(data){ setDb(data); if(data.setelan.pinHash) setTerkunci(true);
+      if(dariCadangan) setTimeout(()=>pesan("Data dipulihkan dari cadangan otomatis"),600); }
+    else setDb(kosong());
+  },[]);
+
+  useEffect(()=>{
+    if(!db) return;
+    if(pertama.current){ pertama.current=false; return; }
+    const id = setTimeout(()=> setStatus(simpan(db)? "tersimpan" : "gagal tersimpan"), 350);
+    return ()=>clearTimeout(id);
+  },[db]);
+
+  /* tema */
+  useEffect(()=>{
+    if(!db) return;
+    /* sebagian webview lama tidak punya matchMedia — jangan sampai aplikasi mati karenanya */
+    const mq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+    const pakai = () => {
+      const t = db.setelan.tema;
+      const gelap = t==="gelap" || (t==="sistem" && !!mq && mq.matches);
+      document.documentElement.dataset.tema = gelap? "gelap":"terang";
+    };
+    pakai();
+    mq && mq.addEventListener && mq.addEventListener("change", pakai);
+    return ()=> { mq && mq.removeEventListener && mq.removeEventListener("change", pakai); };
+  },[db && db.setelan.tema]);
+
+  const pesan = (teks, urungkan) => {
+    setRoti({teks, urungkan});
+    setTimeout(()=>setRoti(r=> r&&r.teks===teks? null:r), urungkan? 8000 : 2600);
+  };
+  const ubah = fn => setDb(d=>{ const baru = fn(d); return baru; });
+  const simpanUrung = () => { urung.current = db; };
+
+  const aksi = useMemo(()=>({
+    roti: pesan,
+    bukaForm: tx => setForm(tx),
+    simpanTx: tx => {
+      ubah(d=>{
+        const ada = d.transaksi.some(x=>x.id===tx.id);
+        const list = ada ? d.transaksi.map(x=>x.id===tx.id? tx : x) : [tx, ...d.transaksi];
+        return {...d, transaksi:list.sort((a,b)=> a.tanggal<b.tanggal?1:-1),
+          setelan: tx.jenis==="pindah" ? d.setelan
+            : {...d.setelan, metodeTerakhir:{...d.setelan.metodeTerakhir, [tx.jenis]:tx.metode}}};
+      });
+      pesan(tx.jenis==="masuk"?"Pemasukan tersimpan": tx.jenis==="pindah"?"Pemindahan tersimpan":"Pengeluaran tersimpan");
+    },
+    hapusTx: id => {
+      simpanUrung();
+      ubah(d=>({...d, transaksi:d.transaksi.filter(x=>x.id!==id)}));
+      pesan("Transaksi dihapus", true);
+    },
+    catatKilat: p => {
+      const tx = {id:uid(), jenis:p.jenis, kategori:p.kategori, nominal:p.nominal, tanggal:hariIni(),
+        catatan:p.catatan, metode:p.metode, dibuat:Date.now(), diubah:Date.now()};
+      simpanUrung();
+      ubah(d=>({...d, transaksi:[tx,...d.transaksi].sort((a,b)=> a.tanggal<b.tanggal?1:-1)}));
+      pesan(`${p.catatan||kat(p.kategori).nama} ${rpk(p.nominal)} tercatat`, true);
+    },
+    simpanPintasan: p => ubah(d=>({...d, pintasan:[...d.pintasan, p]})),
+    hapusPintasan: id => ubah(d=>({...d, pintasan:d.pintasan.filter(x=>x.id!==id)})),
+    tutupPeringatan: id => ubah(d=>({...d, setelan:{...d.setelan, tutupPeringatan:{...d.setelan.tutupPeringatan, [id]:hariIni()}}})),
+    simpanRencana: (mk,r) => { ubah(d=>({...d, rencana:{...d.rencana,[mk]:r}})); pesan("Pembagian disimpan"); },
+
+    simpanAnggaran: a => { ubah(d=>({...d, anggaran: d.anggaran.some(x=>x.id===a.id)? d.anggaran.map(x=>x.id===a.id?a:x) : [...d.anggaran,a]})); pesan("Anggaran disimpan"); },
+    hapusAnggaran: id => ubah(d=>({...d, anggaran:d.anggaran.filter(x=>x.id!==id)})),
+
+    simpanTagihan: t => { ubah(d=>({...d, tagihan: d.tagihan.some(x=>x.id===t.id)? d.tagihan.map(x=>x.id===t.id?t:x) : [...d.tagihan,t]})); pesan("Tagihan disimpan"); },
+    hapusTagihan: id => ubah(d=>({...d, tagihan:d.tagihan.filter(x=>x.id!==id)})),
+    bayarTagihan: t => {
+      const mk = bulanIni();
+      const hari = Math.min(t.tanggal, new Date().getDate());
+      const tanggal = `${mk}-${String(hari).padStart(2,"0")}`;
+      const tx = {id:uid(), jenis:"keluar", kategori:t.kategori, nominal:t.nominal, tanggal,
+        catatan:t.nama, metode:t.metode, dibuat:Date.now(), diubah:Date.now()};
+      simpanUrung();
+      ubah(d=>({...d,
+        transaksi:[tx,...d.transaksi].sort((a,b)=> a.tanggal<b.tanggal?1:-1),
+        tagihan:d.tagihan.map(x=>x.id===t.id? {...x, terakhirBayar:mk} : x)}));
+      pesan(`${t.nama} ditandai lunas dan tercatat`, true);
+    },
+
+    simpanTujuan: g => { ubah(d=>({...d, tujuan: d.tujuan.some(x=>x.id===g.id)? d.tujuan.map(x=>x.id===g.id?g:x) : [...d.tujuan,g]})); pesan("Tujuan disimpan"); },
+    hapusTujuan: id => { simpanUrung(); ubah(d=>({...d, tujuan:d.tujuan.filter(x=>x.id!==id)})); pesan("Tujuan dihapus", true); },
+    setorTujuan: (g,nominal,catat) => {
+      ubah(d=>{
+        const tujuan = d.tujuan.map(x=>x.id===g.id? {...x, terkumpul:x.terkumpul+nominal} : x);
+        if(!catat) return {...d, tujuan};
+        const tx = {id:uid(), jenis:"keluar", kategori:"tabungan", nominal, tanggal:hariIni(),
+          catatan:"Setor "+g.nama, metode:"bank", dibuat:Date.now(), diubah:Date.now()};
+        return {...d, tujuan, transaksi:[tx,...d.transaksi].sort((a,b)=> a.tanggal<b.tanggal?1:-1)};
+      });
+      pesan(`${rpk(nominal)} masuk ke ${g.nama}`);
+    },
+
+    simpanAset: a => { ubah(d=>({...d, aset: d.aset.some(x=>x.id===a.id)? d.aset.map(x=>x.id===a.id?a:x) : [...d.aset,a]})); pesan("Tersimpan"); },
+    hapusAset: id => ubah(d=>({...d, aset:d.aset.filter(x=>x.id!==id)})),
+
+    setProfil: p => ubah(d=>({...d, profil:{...d.profil, ...p}})),
+    setSetelan: s => ubah(d=>({...d, setelan:{...d.setelan, ...s}})),
+    setPin: async nilai => {
+      if(nilai===null){ ubah(d=>({...d, setelan:{...d.setelan, pinHash:null}})); pesan("PIN dimatikan"); return; }
+      const h = await hashPin(nilai);
+      ubah(d=>({...d, setelan:{...d.setelan, pinHash:h}}));
+      pesan("PIN dipasang");
+    },
+    unduhCadangan: () => {
+      const waktu = new Date().toISOString();
+      try{
+        const isi = JSON.stringify({...db, setelan:{...db.setelan, backupTerakhir:waktu}}, null, 2);
+        const b = new Blob([isi],{type:"application/json"}), u = URL.createObjectURL(b);
+        const a = document.createElement("a"); a.href=u; a.download=`my-finance-cadangan-${hariIni()}.json`; a.click();
+        setTimeout(()=>URL.revokeObjectURL(u),1000);
+        ubah(d=>({...d, setelan:{...d.setelan, backupTerakhir:waktu}}));
+        pesan("Cadangan terunduh — simpan di Drive lu");
+      }catch(e){ pesan("Unduhan diblokir peramban"); }
+    },
+    pulihkan: isi => {
+      simpanUrung();
+      const bersih = migrasi(isi);
+      const gabung = window.confirm(
+        `Cadangan berisi ${bersih.transaksi.length} transaksi.\n\nOK = gabungkan dengan data sekarang (${db.transaksi.length} transaksi)\nBatal = timpa semuanya`);
+      if(gabung){
+        ubah(d=>{
+          const idAda = new Set(d.transaksi.map(t=>t.id));
+          const tambah = bersih.transaksi.filter(t=>!idAda.has(t.id));
+          return {...d, transaksi:[...d.transaksi,...tambah].sort((a,b)=> a.tanggal<b.tanggal?1:-1)};
+        });
+        pesan("Data digabungkan", true);
+      }else{
+        setDb(bersih);
+        pesan("Data dipulihkan", true);
+      }
+    },
+    hapusSemua: () => {
+      simpanUrung();
+      setDb(d=>({...kosong(), profil:d.profil, setelan:{...d.setelan, onboarding:true}, pos:d.pos}));
+      pesan("Semua data dihapus", true);
+    },
+    muatContoh: () => { simpanUrung(); setDb(dataContoh()); pesan("Data contoh dimuat", true); },
+  }),[db]);
+
+  if(!db) return <div className="memuat">Memuat My Finance…</div>;
+
+  if(terkunci) return <LayarKunci cocokkan={async v=>{
+    const h = await hashPin(v);
+    if(h===db.setelan.pinHash){ setTerkunci(false); return true; }
+    return false;
+  }}/>;
+
+  if(!db.setelan.onboarding) return (
+    <Pengenalan
+      pakaiContoh={()=>setDb(dataContoh())}
+      selesai={(nama,pemasukan,templat)=>{
+        const mk = bulanIni(), pos = {};
+        POS_BAWAAN.forEach(p=> pos[p.id]=Math.round(pemasukan*(templat.bagi[p.id]||0)/100));
+        setDb(d=>({...d, profil:{...d.profil,nama},
+          setelan:{...d.setelan, onboarding:true},
+          pos: POS_BAWAAN.map(p=>({...p, persen:templat.bagi[p.id]||0})),
+          rencana:{...d.rencana,[mk]:{pemasukan,pos}}}));
+      }}/>
+  );
+
+  const jam = new Date().getHours();
+  const sapa = jam<11?"Selamat pagi": jam<15?"Selamat siang": jam<19?"Selamat sore":"Selamat malam";
+
+  return (
+    <div className="cangkang">
+      <aside className="sisi">
+        <div className="baris" style={{gap:9,padding:"0 10px 22px"}}>
+          <div className="ikon" style={{background:"var(--hijau)",color:"#fff"}}>💰</div>
+          <div>
+            <div style={{fontSize:14,fontWeight:700}}>My Finance</div>
+            <div className="samar">Keuangan pribadi</div>
+          </div>
+        </div>
+        {TAB.map(t=>(
+          <button key={t.id} className={tab===t.id?"aktif":""} onClick={()=>setTab(t.id)}>
+            <span>{t.ikon}</span>{t.nama}
+          </button>
+        ))}
+        <button className="tbl tbl-utama tbl-penuh" style={{marginTop:18}} onClick={()=>setForm({})}>+ Catat transaksi</button>
+        <div className="samar" style={{padding:"14px 10px 0"}}>Perubahan {status} otomatis.</div>
+      </aside>
+
+      <main className="utama">
+        <div className="antara" style={{padding:"18px 0 10px"}}>
+          <div className="baris" style={{gap:11}}>
+            <div className="ikon" style={{width:44,height:44,flex:"0 0 44px",borderRadius:14,background:"var(--hijau)",color:"#fff",fontSize:19}}>
+              {db.profil.emoji || (db.profil.nama||"K").charAt(0)}
+            </div>
+            <div>
+              <div style={{fontSize:15,fontWeight:650}}>{sapa}, {db.profil.nama||"Kamu"} 👋</div>
+              <div className="samar">{HARI[new Date().getDay()]}, {tglPanjang(hariIni())}</div>
+            </div>
+          </div>
+          <button onClick={()=>setSetelanBuka(true)} aria-label="Pengaturan" style={{fontSize:19,padding:"8px 6px"}}>⚙️</button>
+        </div>
+
+        {!adaStorage && (
+          <div className="peringatan p-bahaya" style={{marginBottom:12}}>
+            <span>🚨</span>
+            <div><b>Penyimpanan tidak aktif.</b> Lu kemungkinan membuka ini di mode penyamaran, atau penyimpanan situs diblokir.
+            Catatan lu akan hilang begitu tab ditutup. Buka di jendela biasa.</div>
+          </div>
+        )}
+
+        {tab==="beranda" && <Beranda db={db} aksi={aksi} keTab={setTab} pesan={status}/>}
+        {tab==="alokasi" && <Alokasi db={db} aksi={aksi}/>}
+        {tab==="riwayat" && <Riwayat db={db} aksi={aksi}/>}
+        {tab==="laporan" && <Laporan db={db} aksi={aksi}/>}
+        {tab==="rencana" && <Rencana db={db} aksi={aksi}/>}
+        {tab==="aset"    && <Aset    db={db} aksi={aksi}/>}
+      </main>
+
+      <button className="ambang" onClick={()=>setForm({})}>＋ Catat</button>
+
+      <nav className="nav">
+        {TAB.map(t=>(
+          <button key={t.id} className={tab===t.id?"aktif":""} onClick={()=>setTab(t.id)}>
+            <span style={{fontSize:17}}>{t.ikon}</span>{t.nama}
+          </button>
+        ))}
+      </nav>
+
+      <FormTransaksi tx={form} tutup={()=>setForm(null)} simpanTx={aksi.simpanTx} hapusTx={aksi.hapusTx}
+        simpanPintasan={aksi.simpanPintasan} metodeTerakhir={db.setelan.metodeTerakhir||{}}/>
+      <Pengaturan buka={setelanBuka} tutup={()=>setSetelanBuka(false)} db={db} aksi={aksi}/>
+
+      {roti && (
+        <div className="roti">
+          <span>{roti.teks}</span>
+          {roti.urungkan && urung.current && (
+            <button style={{fontWeight:700,color:"#4ade80"}}
+              onClick={()=>{ setDb(urung.current); urung.current=null; setRoti(null); }}>Urungkan</button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("akar")).render(<App/>);
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=> navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>
